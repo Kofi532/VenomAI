@@ -121,28 +121,7 @@
 
     function getCurrentLocationForReport() {
         var defaultLocation = getDefaultLocation();
-
-        return new Promise(function (resolve) {
-            if (!navigator.geolocation) {
-                resolve(defaultLocation);
-                return;
-            }
-
-            navigator.geolocation.getCurrentPosition(function (position) {
-                var coords = {
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude
-                };
-                persistLocation(coords);
-                resolve(coords);
-            }, function () {
-                resolve(defaultLocation);
-            }, {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 60000
-            });
-        });
+        return Promise.resolve(defaultLocation);
     }
 
     document.addEventListener('DOMContentLoaded', function () {

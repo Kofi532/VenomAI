@@ -817,18 +817,12 @@ def report_sighting_view(request):
 		was_bitten = request.POST.get('was_bitten') == 'yes'
 		contact_number = (request.POST.get('contact_number') or '').strip()
 		time_seen = request.POST.get('time_seen') or SnakeSighting.TimeSeenChoices.JUST_NOW
-		latitude = request.POST.get('latitude')
-		longitude = request.POST.get('longitude')
 		member_type = _resolve_member_type(request)
 		selected_country = request.session.get(SNAKEBITE_NATIONALITY_SESSION_KEY, 'ghana').lower()
 		country_labels = dict(SNAKEBITE_NATIONALITY_OPTIONS)
 		default_coordinates = get_country_coordinates(selected_country)
 		default_latitude = default_coordinates['latitude']
 		default_longitude = default_coordinates['longitude']
-		if latitude in (None, ''):
-			latitude = str(default_latitude)
-		if longitude in (None, ''):
-			longitude = str(default_longitude)
 		country_label = country_labels.get(selected_country, 'Ghana')
 		form_values.update({
 			'headline': heading,
@@ -847,8 +841,6 @@ def report_sighting_view(request):
 			form_errors.append('Please upload a photo.')
 
 		if not form_errors:
-			parsed_latitude = float(latitude) if latitude not in (None, '') else None
-			parsed_longitude = float(longitude) if longitude not in (None, '') else None
 			sighting = SnakeSighting.objects.create(
 				photo=photo,
 				headline=heading,
@@ -859,8 +851,8 @@ def report_sighting_view(request):
 				suspected_species=species_obj,
 				suspected_species_name=species_name,
 				member_type=member_type,
-				latitude=parsed_latitude,
-				longitude=parsed_longitude,
+				latitude=default_latitude,
+				longitude=default_longitude,
 			)
 			case = PatientCase.objects.create(
 				patient_name=heading[:150] or 'Reported snake case',

@@ -447,6 +447,37 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertEqual(float(sighting.longitude), 36.8172)
         self.assertEqual(case.location, 'Kenya')
 
+    def test_report_sighting_ignores_coordinates_from_client(self):
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_nationality'] = 'kenya'
+        session['snakebite_member_type'] = 'community'
+        session.save()
+
+        photo = SimpleUploadedFile(
+            'sighting.jpg',
+            b'fake-image-data',
+            content_type='image/jpeg',
+        )
+
+        response = self.client.post(
+            reverse('snakebite:report_sighting'),
+            {
+                'headline': 'Snake seen near Nairobi',
+                'description': 'Large green snake by a roadside',
+                'was_bitten': 'no',
+                'time_seen': 'just_now',
+                'latitude': '9.0820',
+                'longitude': '8.6753',
+                'photo': photo,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        sighting = SnakeSighting.objects.order_by('-pk').first()
+        self.assertEqual(float(sighting.latitude), -1.2864)
+        self.assertEqual(float(sighting.longitude), 36.8172)
+
     def test_report_sighting_uses_zambia_country_default_coordinates(self):
         session = self.client.session
         session['snakebite_access_granted'] = True
