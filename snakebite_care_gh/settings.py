@@ -47,7 +47,17 @@ SECRET_KEY = 'django-insecure-zubesrkdzovg0gii-8bautz3rh7ntlv+ltgpc3$1)#9y!1&=0o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'testserver']
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+    'testserver',
+    'kofi532.pythonanywhere.com',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://kofi532.pythonanywhere.com',
+]
 
 
 # Application definition
