@@ -1,43 +1,11 @@
-# VenomAI
+# Snakebite Care GH
 
-# GlucoBridge
+Django project scaffold for the Snakebite Care GH application.
 
-A Django web application for health informatics, including patient profiles, medical encounters, vital signs, and appointment tracking.
+## Run locally
 
-## Setup
-
-1. Create and activate a virtual environment:
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   ```
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Run migrations:
-   ```bash
-   python manage.py migrate
-   ```
-4. Create a superuser:
-   ```bash
-   python manage.py createsuperuser
-   ```
-5. Start the development server:
-   ```bash
-   python manage.py runserver
-   ```
-
-## Features
-
-- Patient profiles
-- Medical records and vital signs
-- Appointments
-- Admin site registration
-
-## Next steps
-
-- Add user authentication and role-based access
-- Connect to a production-ready database
-- Implement APIs with Django REST Framework
-- Add charting and analytics for patient data
+```bash
+cd snakebite_care_gh
+/Users/KWAKU/Downloads/project_work/.venv-1/bin/python manage.py migrate
+/Users/KWAKU/Downloads/project_work/.venv-1/bin/python manage.py runserver
+```
