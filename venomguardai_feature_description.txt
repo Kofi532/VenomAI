@@ -1,23 +1,25 @@
-VenomGuardAI Web App – Feature Description and Replication Guide
+VenomGuardAI Web App – Current Feature Description
 
 1. Product purpose
 VenomGuardAI is a Django-based snakebite response and health guidance web app designed for two user groups:
 - Community members who need basic first-aid guidance and risk awareness
 - Healthcare workers or CHWs who manage suspected snakebite cases, track referrals, and identify nearby antivenom stock
 
-The app is built to help users quickly assess likely snakebite risk from symptoms, locate or understand first-aid steps, learn local snake species and risk patterns, and coordinate urgent referral to the nearest stocked facility.
+The app helps users assess likely snakebite risk from symptoms, understand first-aid steps, learn local snake species and risk patterns, and coordinate urgent referral to the nearest stocked facility.
 
-2. Project structure
-This app lives in the Django project folder named snakebite_care_gh/ and uses the main Django app named snakebite.
+2. Current project structure
+This workspace is now focused on the VenomGuardAI project. The active web app is the snakebite application inside the Django project folder named snakebite_care_gh/.
 
 Main app files:
 - snakebite/models.py: database models for snakes, facilities, symptom data, training resources, assessments, and cases
 - snakebite/services.py: risk engine for symptom-based risk scoring and nearest facility calculation
-- snakebite/views.py: all application logic for access, dashboards, assessments, referrals, and API endpoints
+- snakebite/views.py: application logic for access, dashboards, assessments, referrals, and API endpoints
 - snakebite/urls.py: page routes and API routes
-- snakebite/templates/snakebite/: web UI templates for all screens
+- snakebite/templates/snakebite/: UI templates for all screens
 - snakebite/serializers.py: DRF serializers for API payloads
 - snakebite/management/commands/seed_snakebite_data.py: demo data seeding script
+
+The separate health_informatics project is not part of the active VenomGuardAI web app and has been removed from the main app flow.
 
 3. Core user flow
 The app uses a password-controlled access flow before any protected page becomes visible.

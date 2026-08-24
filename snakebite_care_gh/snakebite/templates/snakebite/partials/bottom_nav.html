@@ -1,22 +1,51 @@
-{% with current_name=request.resolver_match.url_name %}
-<nav class="snakebite-mobile-nav" aria-label="Primary navigation">
-  <a href="{% url 'snakebite:community_home' %}" class="nav-item {% if current_name == 'community_home' or current_name == 'community_bite_assessment' or current_name == 'community_risk_result' or current_name == 'community_nearest_help' or current_name == 'chw_dashboard' or current_name == 'chw_home' or current_name == 'case_details' or current_name == 'send_referral' %}active{% endif %}">
-    <span class="nav-icon">🕒</span>
-    <span>Timeline</span>
+{% with current_name=request.resolver_match.url_name nav_role=nav_role|default:venomguard_member_type_code|default:'community' %}
+{% if nav_role == 'healthcare' %}
+<nav class="snakebite-mobile-nav snakebite-healthcare-nav" aria-label="Healthcare navigation">
+  <a href="{% url 'snakebite:chw_home' %}" class="nav-item {% if current_name == 'chw_home' or current_name == 'case_details' or current_name == 'send_referral' %}active{% endif %}">
+    <span class="nav-icon">⌂</span>
+    <span>Home</span>
   </a>
-  <a href="{% url 'snakebite:community_nearest_help' %}" class="nav-item {% if current_name == 'community_nearest_help' or current_name == 'antivenom_map' or current_name == 'map' %}active{% endif %}">
-    <span class="nav-icon">📍</span>
-    <span>Map</span>
+  <a href="{% if latest_case %}{% url 'snakebite:case_details' pk=latest_case.pk %}{% else %}{% url 'snakebite:chw_home' %}{% endif %}" class="nav-item {% if current_name == 'case_details' %}active{% endif %}">
+    <span class="nav-icon">▣</span>
+    <span>Cases</span>
+  </a>
+  <a href="{% url 'snakebite:chw_dashboard' %}" class="nav-item {% if current_name == 'chw_dashboard' %}active{% endif %}">
+    <span class="nav-icon">⚑</span>
+    <span>Alerts</span>
   </a>
   <a href="{% url 'snakebite:report_sighting' %}" class="nav-item {% if current_name == 'report_sighting' or current_name == 'report' %}active{% endif %}">
-    <span class="nav-icon">⚠️</span>
+    <span class="nav-icon">📝</span>
     <span>Report</span>
   </a>
   <a href="{% url 'snakebite:settings' %}" class="nav-item {% if current_name == 'settings' %}active{% endif %}">
     <span class="nav-icon">⚙️</span>
-    <span>Settings</span>
+    <span>More</span>
   </a>
 </nav>
+{% else %}
+<nav class="snakebite-mobile-nav snakebite-community-nav" aria-label="Community navigation">
+  <a href="{% url 'snakebite:community_home' %}" class="nav-item {% if current_name == 'community_home' or current_name == 'community_bite_assessment' or current_name == 'community_risk_result' or current_name == 'community_nearest_help' %}active{% endif %}">
+    <span class="nav-icon">🏠</span>
+    <span>Home</span>
+  </a>
+  <a href="{% url 'snakebite:education_training' %}" class="nav-item {% if current_name == 'education_training' %}active{% endif %}">
+    <span class="nav-icon">📘</span>
+    <span>Learn</span>
+  </a>
+  <a href="{% url 'snakebite:report' %}" class="nav-item {% if current_name == 'report' or current_name == 'report_sighting' %}active{% endif %}">
+    <span class="nav-icon">📝</span>
+    <span>Report</span>
+  </a>
+  <a href="{% url 'snakebite:community_risk_result' %}" class="nav-item {% if current_name == 'community_risk_result' %}active{% endif %}">
+    <span class="nav-icon">🚨</span>
+    <span>Alerts</span>
+  </a>
+  <a href="{% url 'snakebite:settings' %}" class="nav-item {% if current_name == 'settings' %}active{% endif %}">
+    <span class="nav-icon">👤</span>
+    <span>Profile</span>
+  </a>
+</nav>
+{% endif %}
 
 <style>
   .snakebite-mobile-nav {
@@ -26,13 +55,17 @@
     bottom: 0;
     z-index: 30;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 8px;
     background: rgba(11, 14, 20, 0.96);
     border-top: 1px solid rgba(255,255,255,0.08);
     box-shadow: 0 -10px 30px rgba(0,0,0,0.25);
     padding: 8px 10px calc(10px + env(safe-area-inset-bottom));
     backdrop-filter: blur(12px);
+  }
+
+  .snakebite-healthcare-nav {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .snakebite-mobile-nav .nav-item {
@@ -46,6 +79,8 @@
     font-size: 11px;
     font-weight: 700;
     padding: 7px 6px 6px;
+    min-height: 48px;
+    white-space: nowrap;
     border-radius: 12px;
     border: 1px solid transparent;
     transition: all 0.15s ease;

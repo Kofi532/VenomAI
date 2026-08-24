@@ -1,302 +1,214 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nearest Help | VenomGuard AI</title>
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""
-  >
-  <style>
-    :root {
-      --bg: #0f3822;
-      --panel: rgba(255, 255, 255, 0.08);
-      --panel-border: rgba(255, 255, 255, 0.12);
-      --text: #f8fff6;
-      --muted: #cfe2d1;
-      --primary: #9fe59a;
-      --primary-deep: #1e7a3e;
-      --warning: #f0ba58;
-      --danger: #e75d5d;
-      --shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
-    }
+{% extends 'snakebite/base.html' %}
+{% load static %}
 
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      min-height: 100%;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
-      background: radial-gradient(circle at top, rgba(159, 229, 154, 0.16), transparent 30%), linear-gradient(180deg, #123d26 0%, var(--bg) 55%, #0b2818 100%);
-    }
+{% block title %}VenomGuard AI | Nearest Help{% endblock %}
 
+{% block extra_styles %}
+<style>
     body {
-      display: flex;
-      justify-content: center;
-      padding: 14px 14px 102px;
+        background: #07130f;
+        color: #edf7f3;
     }
-
-    .screen {
-      width: 100%;
-      max-width: 460px;
+    .page-shell {
+        max-width: 480px;
+        padding-top: 18px;
+        padding-bottom: 110px;
     }
-
-    .top-bar {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 10px;
-      margin-bottom: 12px;
-      border-radius: 16px;
-      background: rgba(9, 31, 20, 0.92);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+    .timeline-page {
+        min-height: 100vh;
+        background: radial-gradient(circle at top, rgba(38, 92, 88, 0.28), transparent 28%), #07130f;
+        color: #edf7f3;
+        padding: 14px 14px 24px;
     }
-
-    .back-link {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      text-decoration: none;
-      color: var(--text);
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      font-size: 20px;
-      line-height: 1;
+    .timeline-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 4px 16px;
     }
-
-    .header-copy h1 {
-      margin: 0;
-      font-size: 0.96rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      line-height: 1.25;
+    .title-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-
-    .map-wrap {
-      border-radius: 16px;
-      overflow: hidden;
-      border: 1px solid var(--panel-border);
-      box-shadow: var(--shadow);
-      margin-bottom: 12px;
-      background: #153a27;
-      height: 60vh;
-      min-height: 320px;
+    .clock-mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(136, 192, 255, 0.12);
+        border: 1px solid rgba(136, 192, 255, 0.28);
+        color: #9ecbff;
+        font-size: 18px;
     }
-
-    #nearest-help-map {
-      width: 100%;
-      height: 100%;
+    .timeline-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin: 0;
+        color: #f5f7fb;
     }
-
+    .map-card {
+        position: relative;
+        margin-bottom: 18px;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: linear-gradient(180deg, rgba(78, 144, 122, 0.18), rgba(8, 19, 16, 0.96));
+        overflow: hidden;
+        min-height: 180px;
+        box-shadow: 0 15px 25px rgba(0,0,0,0.14);
+    }
+    .map-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+        background-size: 24px 24px;
+    }
+    .map-pin {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border-radius: 50% 50% 50% 0;
+        background: #8ce7b1;
+        transform: rotate(-45deg);
+        border: 2px solid rgba(255,255,255,0.9);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.28);
+    }
+    .map-pin::after {
+        content: "";
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: rgba(8, 19, 16, 0.9);
+        border-radius: 50%;
+        left: 4px;
+        top: 4px;
+    }
+    .map-pin.pin-1 { top: 26%; left: 22%; }
+    .map-pin.pin-2 { top: 42%; left: 52%; }
+    .map-pin.pin-3 { top: 58%; left: 72%; }
+    .facility-list {
+        display: grid;
+        gap: 12px;
+    }
     .facility-card {
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      border-radius: 14px;
-      padding: 12px;
-      box-shadow: var(--shadow);
-      margin-bottom: 16px;
+        background: rgba(19, 35, 31, 0.9);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 18px;
+        padding: 16px 14px;
+        box-shadow: 0 15px 25px rgba(0,0,0,0.14);
     }
-
     .facility-name {
-      margin: 0;
-      font-size: 1rem;
-      font-weight: 800;
-      line-height: 1.3;
-      text-transform: uppercase;
+        margin: 0 0 6px;
+        font-size: 1rem;
+        font-weight: 800;
+        color: #f5f7fb;
     }
-
     .facility-line {
-      margin: 5px 0 0;
-      color: var(--muted);
-      font-size: 0.86rem;
-      line-height: 1.35;
+        margin: 0 0 8px;
+        color: #bed7d0;
+        font-size: 0.82rem;
+        line-height: 1.5;
     }
-
     .status-ok {
-      margin: 5px 0 0;
-      font-size: 0.86rem;
-      font-weight: 700;
-      color: #81f0b1;
+        margin: 0 0 8px;
+        font-size: 0.76rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #a7f0c1;
+        font-weight: 800;
     }
-
-    .green-pin {
-      width: 20px;
-      height: 20px;
-      border-radius: 50% 50% 50% 0;
-      background: #1e7a3e;
-      transform: rotate(-45deg);
-      border: 2px solid #c7f5d2;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+    .facility-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 12px;
     }
-
-    .green-pin::after {
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #eafbeb;
-      position: absolute;
-      top: 4px;
-      left: 4px;
-    }
-
-    .gold-pin {
-      width: 20px;
-      height: 20px;
-      border-radius: 50% 50% 50% 0;
-      background: #d9a228;
-      transform: rotate(-45deg);
-      border: 2px solid #f6e7b3;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
-    }
-
-    .gold-pin::after {
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #fff8dd;
-      position: absolute;
-      top: 4px;
-      left: 4px;
-    }
-
     .actions {
-      display: grid;
-      gap: 10px;
-      margin-top: 20px;
+        position: sticky;
+        bottom: 72px;
+        display: grid;
+        gap: 12px;
+        margin-top: 18px;
+        padding-top: 6px;
+        background: rgba(7, 19, 15, 0.82);
+        backdrop-filter: blur(10px);
     }
+    .emergency-bar {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        display: flex;
+        justify-content: center;
+        margin-top: 18px;
+        padding: 12px 10px 0;
+    }
+    .emergency-link {
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: linear-gradient(135deg, rgba(255,59,48,0.22), rgba(255,59,48,0.12));
+        border: 1px solid rgba(255, 92, 82, 0.40);
+        border-radius: 14px;
+        color: #ffd6d3;
+        padding: 12px 16px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+</style>
+{% endblock %}
 
-    .btn {
-      width: 100%;
-      border: none;
-      min-height: 52px;
-      border-radius: 12px;
-      font-weight: 800;
-      font-size: 0.96rem;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: #102c1d;
-    }
-
-    .btn-light {
-      background: rgba(255,255,255,0.08);
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-
-    .btn-emergency {
-      background: var(--danger);
-      color: white;
-    }
-
-    .leaflet-popup-content-wrapper,
-    .leaflet-popup-tip {
-      background: #173d2a;
-      color: #f2fff2;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-    }
-  </style>
-</head>
-<body>
-  <main class="screen">
-    <header class="top-bar">
-      <a class="back-link" href="{% url 'snakebite:community_home' %}" aria-label="Back to home">&larr;</a>
-      <div class="header-copy">
-        <h1>Nearest Help</h1>
-      </div>
+{% block content %}
+<div class="timeline-page">
+    <header class="timeline-topbar" aria-label="Nearest help header">
+        <div class="title-group">
+            <span class="clock-mark" aria-hidden="true">⌁</span>
+            <h1 class="timeline-title">Nearest Help</h1>
+        </div>
     </header>
 
-    <section class="map-wrap" aria-label="Interactive nearest help map">
-      <div id="nearest-help-map"></div>
-    </section>
-
-    <section class="facility-card">
-      <h2 class="facility-name">Beposo Health Centre</h2>
-      <p class="facility-line">8.6 km away · 15 min by road</p>
-      <p class="status-ok">Anti-venom available</p>
-      <p class="facility-line">Open 24/7 · In case of emergency, call 112</p>
-    </section>
-
-    <div class="actions">
-      <a href="" class="btn btn-primary">Get Directions</a>
-      <a href="tel:+233000000000" class="btn btn-light">Call for Transport Help</a>
-      <a href="tel:112" class="btn btn-emergency">Emergency? Call 112</a>
+    <div class="map-card" aria-label="Nearby facility map preview">
+        <div class="map-grid"></div>
+        <span class="map-pin pin-1"></span>
+        <span class="map-pin pin-2"></span>
+        <span class="map-pin pin-3"></span>
     </div>
 
-    {% include 'snakebite/_community_bottom_nav.html' %}
-  </main>
+    <div class="facility-list">
+        {% for facility in facilities %}
+        <article class="facility-card">
+            <h2 class="facility-name">{{ facility.facility_name }}</h2>
+            <p class="facility-line">{{ facility.distance_km }} km away · {{ facility.facility_type }}</p>
+            <p class="status-ok">{{ facility.status_label|default:'Open 24/7' }}</p>
+            <p class="facility-line">{{ facility.region.name|default:country_label }} · Antivenom: {{ facility.antivenom_cost_ghs|default:'Available' }}</p>
+            <p class="facility-line">Phone: {{ facility.contact_phone|default:'112' }}</p>
+            <div class="facility-actions">
+                <a href="https://www.google.com/maps/search/?api=1&query={{ facility.facility_name|default:'health facility'|urlencode }}" class="secondary-btn" target="_blank" rel="noopener noreferrer">Get Directions</a>
+                <a href="tel:{{ facility.contact_phone|default:emergency_number }}" class="primary-btn">Call for Transport Help</a>
+            </div>
+        </article>
+        {% empty %}
+        <article class="facility-card">
+            <h2 class="facility-name">No facility found yet</h2>
+            <p class="facility-line">Please return to the timeline and contact emergency services immediately.</p>
+        </article>
+        {% endfor %}
+    </div>
 
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
-  <script>
-    (function () {
-      var map = L.map('nearest-help-map', {
-        zoomControl: true,
-        scrollWheelZoom: true
-      });
+    <div class="actions">
+        <a href="{% url 'snakebite:community_home' %}" class="secondary-btn">Back to timeline</a>
+    </div>
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
-
-      var facilityCoords = [
-        { name: 'Beposo Health Centre', lat: 7.9600, lng: -1.0400, color: 'green' },
-        { name: 'Regional Referral Unit', lat: 7.9900, lng: -1.0800, color: 'gold' }
-      ];
-
-      var bounds = [];
-
-      facilityCoords.forEach(function (facility) {
-        var icon = L.divIcon({
-          className: facility.color === 'green' ? 'green-pin' : 'gold-pin',
-          iconSize: [20, 20],
-          iconAnchor: [10, 20],
-          popupAnchor: [0, -20]
-        });
-
-        var marker = L.marker([facility.lat, facility.lng], { icon: icon }).addTo(map);
-        marker.bindPopup(
-          '<strong>' + facility.name + '</strong><br>' +
-          'Open 24/7<br>' +
-          'Anti-venom available'
-        );
-        bounds.push([facility.lat, facility.lng]);
-      });
-
-      var userLatLng = [7.9300, -1.0100];
-      var userMarker = L.marker(userLatLng, {
-        icon: L.divIcon({
-          className: 'green-pin',
-          iconSize: [20, 20],
-          iconAnchor: [10, 20],
-          popupAnchor: [0, -20]
-        })
-      }).addTo(map);
-      userMarker.bindPopup('<strong>You are here</strong>');
-
-      bounds.push(userLatLng);
-      map.fitBounds(bounds, { padding: [30, 30] });
-    })();
-  </script>
-</body>
-</html>
+    <div class="emergency-bar">
+        <a href="tel:{{ emergency_number|default:'112' }}" class="emergency-link">Emergency call</a>
+    </div>
+</div>
+{% endblock %}

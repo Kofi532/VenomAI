@@ -1,5 +1,32 @@
 {% extends 'snakebite/base.html' %}
 {% block title %}Report Sighting{% endblock %}
+{% block extra_styles %}
+<style>
+    .submit-button.is-submitting {
+        cursor: wait;
+        opacity: 0.78;
+    }
+    .submit-button[disabled] {
+        cursor: wait;
+    }
+    .submit-spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: report-spin 0.7s linear infinite;
+    }
+    .submit-button.is-submitting .submit-spinner {
+        display: inline-block;
+    }
+    @keyframes report-spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
 {% block extra_head %}
 <script>
     function updateSelectedPhoto(input) {
@@ -57,6 +84,67 @@
         });
     }
 
+    function getDefaultLocation() {
+        var defaultCoords = {
+            latitude: {{ default_country_latitude|default:5.6037 }},
+            longitude: {{ default_country_longitude|default:-0.1870 }}
+        };
+        return {
+            latitude: Number(defaultCoords.latitude),
+            longitude: Number(defaultCoords.longitude)
+        };
+    }
+
+    function getStoredLocation() {
+        try {
+            var raw = localStorage.getItem('venomguard_last_location');
+            if (!raw) return null;
+            var parsed = JSON.parse(raw);
+            if (parsed && typeof parsed.latitude === 'number' && typeof parsed.longitude === 'number') {
+                return { latitude: parsed.latitude, longitude: parsed.longitude };
+            }
+        } catch (error) {
+            return null;
+        }
+        return null;
+    }
+
+    function persistLocation(coords) {
+        if (!coords || typeof coords.latitude !== 'number' || typeof coords.longitude !== 'number') {
+            return;
+        }
+        localStorage.setItem('venomguard_last_location', JSON.stringify({
+            latitude: coords.latitude,
+            longitude: coords.longitude
+        }));
+    }
+
+    function getCurrentLocationForReport() {
+        var defaultLocation = getDefaultLocation();
+
+        return new Promise(function (resolve) {
+            if (!navigator.geolocation) {
+                resolve(defaultLocation);
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(function (position) {
+                var coords = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                };
+                persistLocation(coords);
+                resolve(coords);
+            }, function () {
+                resolve(defaultLocation);
+            }, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
+            });
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         ['report-photo-camera-input', 'report-photo-gallery-input'].forEach(function (id) {
             var input = document.getElementById(id);
@@ -68,6 +156,38 @@
 
         bindChipSelection('was_bitten');
         bindChipSelection('time_seen');
+
+        var form = document.querySelector('form[method="post"]');
+        if (!form) return;
+
+        var submitButton = form.querySelector('.submit-button');
+        var submitLabel = submitButton ? submitButton.querySelector('.submit-label') : null;
+        var isSubmitting = false;
+
+        form.addEventListener('submit', function (event) {
+            if (isSubmitting) {
+                event.preventDefault();
+                return;
+            }
+            isSubmitting = true;
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.classList.add('is-submitting');
+            }
+            if (submitLabel) submitLabel.textContent = 'Submitting report...';
+
+            var latitudeField = document.getElementById('latitude');
+            var longitudeField = document.getElementById('longitude');
+            if (!latitudeField || !longitudeField) return;
+
+            event.preventDefault();
+            getCurrentLocationForReport().then(function (coords) {
+                persistLocation(coords);
+                latitudeField.value = typeof coords.latitude === 'number' ? coords.latitude : '';
+                longitudeField.value = typeof coords.longitude === 'number' ? coords.longitude : '';
+                form.submit();
+            });
+        });
     });
 
     window.addEventListener('pageshow', function () {
@@ -89,7 +209,9 @@
 
         {% if form_errors %}
             {% for error in form_errors %}
-                <div class="alert-box">{{ error }}</div>
+                {% if error != 'Please add a short description.' %}
+                    <div class="alert-box">{{ error }}</div>
+                {% endif %}
             {% endfor %}
         {% endif %}
 
@@ -115,19 +237,22 @@
                 <select id="suspected_species" name="suspected_species" class="field">
                     <option value="">Select a species</option>
                     {% for species in species %}
-                        <option value="{{ species.id }}">{{ species.common_name }}</option>
+                        <option value="{{ species.id }}" {% if form_values.suspected_species|default:'' == species.id|stringformat:'s' %}selected{% endif %}>{{ species.common_name }}</option>
                     {% endfor %}
                 </select>
             </div>
 
             <div class="card" style="margin-bottom: 14px;">
                 <label class="muted" for="headline">Headline</label>
-                <input id="headline" name="headline" type="text" class="field" maxlength="255" placeholder="e.g. Snake seen near the road drain">
+                <input id="headline" name="headline" type="text" class="field" maxlength="255" placeholder="e.g. Snake seen near the road drain" value="{{ form_values.headline|default:'' }}">
             </div>
 
             <div class="card" style="margin-bottom: 14px;">
                 <label class="muted" for="description">Description</label>
-                <textarea id="description" name="description" class="field" maxlength="200" placeholder="Describe what you saw, the location and behavior."></textarea>
+                <textarea id="description" name="description" class="field {% if 'Please add a short description.' in form_errors %}field-error-input{% endif %}" maxlength="200" placeholder="Describe what you saw, the location and behavior.">{{ form_values.description|default:'' }}</textarea>
+                {% if 'Please add a short description.' in form_errors %}
+                    <div class="field-error">Please add a short description.</div>
+                {% endif %}
             </div>
 
             <div class="card" style="margin-bottom: 14px;">
@@ -135,15 +260,18 @@
                     <span class="muted">Was anyone bitten?</span>
                 </div>
                 <div class="chip-row">
-                    <label class="chip active"><input type="radio" name="was_bitten" value="no" checked style="display:none;">No</label>
-                    <label class="chip"><input type="radio" name="was_bitten" value="yes" style="display:none;">Yes</label>
+                    <label class="chip {% if form_values.was_bitten == 'no' %}active{% endif %}"><input type="radio" name="was_bitten" value="no" {% if form_values.was_bitten == 'no' %}checked{% endif %} style="display:none;">No</label>
+                    <label class="chip {% if form_values.was_bitten == 'yes' %}active{% endif %}"><input type="radio" name="was_bitten" value="yes" {% if form_values.was_bitten == 'yes' %}checked{% endif %} style="display:none;">Yes</label>
                 </div>
             </div>
 
             <div class="card" style="margin-bottom: 14px;">
                 <label class="muted" for="contact_number">WhatsApp / phone</label>
-                <input id="contact_number" name="contact_number" type="text" class="field" placeholder="Optional contact number">
+                <input id="contact_number" name="contact_number" type="text" class="field" placeholder="Optional contact number" value="{{ form_values.contact_number|default:'' }}">
             </div>
+
+            <input id="latitude" type="hidden" name="latitude" value="">
+            <input id="longitude" type="hidden" name="longitude" value="">
 
             <div class="card" style="margin-bottom: 18px;">
                 <div class="section-header" style="margin-bottom: 0;">
@@ -151,8 +279,8 @@
                 </div>
                 <div class="chip-row">
                     {% for value, label in time_options %}
-                        <label class="chip {% if forloop.first %}active{% endif %}">
-                            <input type="radio" name="time_seen" value="{{ value }}" {% if forloop.first %}checked{% endif %} style="display:none;">
+                        <label class="chip {% if form_values.time_seen|default:'just_now' == value %}active{% endif %}">
+                            <input type="radio" name="time_seen" value="{{ value }}" {% if form_values.time_seen|default:'just_now' == value %}checked{% endif %} style="display:none;">
                             {{ label }}
                         </label>
                     {% endfor %}
@@ -160,7 +288,7 @@
             </div>
 
             <div style="display: flex; gap: 10px;">
-                <button type="submit" class="primary-btn" style="flex:1;">Submit report</button>
+                <button type="submit" class="primary-btn submit-button" style="flex:1;"><span class="submit-spinner" aria-hidden="true"></span><span class="submit-label">Submit report</span></button>
             </div>
         </form>
     </div>

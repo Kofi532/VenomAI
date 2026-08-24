@@ -158,42 +158,62 @@
       left: 4px;
     }
 
-    .tabs {
+    .bottom-nav {
       position: fixed;
-      left: 0;
-      right: 0;
+      left: 50%;
+      transform: translateX(-50%);
       bottom: 0;
-      padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
-      background: linear-gradient(180deg, transparent, rgba(11, 40, 24, 0.92) 30%, rgba(11, 40, 24, 0.98));
+      z-index: 30;
+      width: min(480px, 100%);
+      background: rgba(10, 17, 16, 0.94);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px 18px 0 0;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 -12px 30px rgba(0,0,0,0.28);
     }
 
-    .tabs-inner {
-      max-width: 460px;
-      margin: 0 auto;
+    .bottom-nav-inner {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 8px;
+      padding: 10px 10px calc(14px + env(safe-area-inset-bottom));
     }
 
-    .tab {
+    .nav-item {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
-      padding: 10px 8px;
+      gap: 5px;
+      color: #a9b8b3;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 8px 6px;
       border-radius: 12px;
-      font-size: 0.76rem;
       font-weight: 700;
-      color: var(--muted);
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid rgba(255, 255, 255, 0.13);
+      text-decoration: none;
+      transition: all 0.2s ease;
     }
 
-    .tab.active {
-      color: #0f3822;
-      background: var(--accent);
-      border-color: rgba(159, 229, 154, 0.7);
+    .nav-item svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .nav-item.active {
+      color: #f7ca4d;
+      background: rgba(247, 202, 77, 0.1);
+      box-shadow: inset 0 0 0 1px rgba(247, 202, 77, 0.18);
+    }
+
+    .nav-item:hover {
+      color: #edf7f3;
     }
 
     .leaflet-popup-content-wrapper,
@@ -241,20 +261,24 @@
 
   {{ facilities_payload|json_script:"facilities-json" }}
 
-  <nav class="tabs" aria-label="Antivenom tabs">
-    <div class="tabs-inner">
-      <div class="tab active">
-        <span aria-hidden="true">&#128205;</span>
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <div class="bottom-nav-inner">
+      <a class="nav-item" href="{% url 'snakebite:community_home' %}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+        <span>Timeline</span>
+      </a>
+      <a class="nav-item active" href="{% url 'snakebite:antivenom_map' %}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l6-3v12l-6 3Zm0 0 6-3M15 3v12"/></svg>
         <span>Map</span>
-      </div>
-      <div class="tab">
-        <span aria-hidden="true">&#128202;</span>
-        <span>List</span>
-      </div>
-      <div class="tab">
-        <span aria-hidden="true">&#9432;</span>
-        <span>Info</span>
-      </div>
+      </a>
+      <a class="nav-item" href="{% url 'snakebite:report_sighting' %}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v10m-5 0h10M12 17v4M5 20h14"/></svg>
+        <span>Report</span>
+      </a>
+      <a class="nav-item" href="{% url 'snakebite:settings' %}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3m0 15v3m9-9h-3M6 12H3m15.5 6.5-2.1-2.1m-8.8-8.8-2.1-2.1m0 13-2.1-2.1m13-8.8-2.1-2.1M12 8.5A3.5 3.5 0 1 1 12 15.5 3.5 3.5 0 0 1 12 8.5Z"/></svg>
+        <span>Settings</span>
+      </a>
     </div>
   </nav>
 

@@ -84,171 +84,194 @@
       text-transform: uppercase;
     }
 
-    .hero {
-      background: linear-gradient(135deg, rgba(15, 114, 89, 0.18), rgba(93, 160, 116, 0.08)), var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      padding: 18px 18px 16px;
-      box-shadow: var(--shadow);
-      margin-bottom: 18px;
-    }
-
-    .hero-top {
+    .greeting {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 12px;
+      gap: 12px;
+      margin-bottom: 18px;
     }
 
-    .hero-title {
+    .greeting-title {
       margin: 0;
-      font-size: 1.1rem;
+      font-size: 1.8rem;
+      line-height: 1.1;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+    }
+
+    .role-line {
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(13, 123, 90, 0.08);
+      color: var(--primary-dark);
+      border: 1px solid rgba(13, 123, 90, 0.2);
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .role-name {
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      text-transform: uppercase;
       font-weight: 800;
     }
 
-    .hero-subtitle {
-      margin: 0;
-      font-size: 0.86rem;
-      color: var(--muted);
-      font-weight: 600;
+    .primary-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      width: 100%;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--primary), #1ea178);
+      color: #fff;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 800;
+      box-shadow: 0 14px 24px rgba(13, 123, 90, 0.18);
+      margin-bottom: 18px;
     }
 
-    .metrics {
+    .stats-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
-      margin: 16px 0 0;
+      margin-bottom: 20px;
     }
 
-    .metric-card {
-      background: #f8fbf8;
+    .stat-card {
+      background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 14px 12px;
+      border-radius: 18px;
+      padding: 16px 14px 12px;
+      box-shadow: 0 8px 18px rgba(17, 62, 47, 0.04);
     }
 
-    .metric-link {
-      display: block;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .metric-value {
-      font-size: 1.6rem;
+    .stat-value {
+      margin: 0;
+      font-size: 1.8rem;
       font-weight: 900;
-      margin: 0 0 4px;
       color: var(--primary-dark);
     }
 
-    .metric-label {
-      margin: 0;
+    .stat-label {
+      margin: 6px 0 0;
       font-size: 0.72rem;
-      color: var(--muted);
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      font-weight: 700;
+      color: var(--muted);
+      font-weight: 800;
     }
 
-    .section-title {
+    .summary-block,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 8px 18px rgba(17, 62, 47, 0.04);
+      margin-bottom: 18px;
+    }
+
+    .section-label {
       margin: 0 0 12px;
-      font-size: 0.8rem;
+      font-size: 0.72rem;
       letter-spacing: 0.12em;
       color: var(--muted);
       text-transform: uppercase;
       font-weight: 800;
     }
 
-    .cases-list,
-    .quick-actions {
+    .summary-grid {
       display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
     }
 
-    .case-card,
-    .action-card {
-      background: var(--panel);
+    .mini-stat {
+      background: var(--panel-alt);
       border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 14px 14px;
-      box-shadow: 0 4px 10px rgba(13, 33, 27, 0.03);
+      border-radius: 14px;
+      padding: 12px 10px;
     }
 
-    .case-head,
-    .action-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .case-id {
-      font-weight: 800;
+    .mini-stat .value {
       margin: 0;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: var(--primary-dark);
     }
 
-    .status-pill {
-      background: rgba(13, 123, 90, 0.08);
-      color: var(--primary-dark);
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 0.72rem;
-      font-weight: 800;
+    .mini-stat .label {
+      margin: 6px 0 0;
+      font-size: 0.68rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-    }
-
-    .case-meta {
-      margin: 8px 0 0;
       color: var(--muted);
-      font-size: 0.82rem;
-      line-height: 1.5;
-    }
-
-    .action-card {
-      display: block;
-      text-decoration: none;
-      color: var(--text);
-    }
-
-    .action-label {
       font-weight: 800;
+    }
+
+    .alert-list {
+      list-style: none;
       margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 10px;
     }
 
-    .action-copy {
+    .alert-item {
+      background: var(--panel-alt);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .alert-message {
+      margin: 0;
+      line-height: 1.5;
+      font-weight: 700;
+    }
+
+    .alert-time {
+      display: block;
+      margin-top: 8px;
       color: var(--muted);
-      font-size: 0.8rem;
-      margin: 6px 0 0;
-      line-height: 1.45;
+      font-size: 0.72rem;
+      font-weight: 700;
     }
 
-    .cta-bar {
-      position: sticky;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(237, 245, 240, 0.92);
-      backdrop-filter: blur(10px);
-      border-top: 1px solid var(--line);
-      padding: 12px 16px 18px;
-      margin: 18px -16px 0;
-    }
-
-    .cta-button {
+    .resources-link {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 100%;
-      min-height: 52px;
-      border: none;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--primary), #1ca078);
-      color: white;
       text-decoration: none;
-      font-size: 1rem;
+      color: var(--primary-dark);
       font-weight: 800;
-      box-shadow: 0 12px 26px rgba(13, 123, 90, 0.22);
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--secondary);
+      border: 1px solid rgba(13, 123, 90, 0.2);
     }
   </style>
 </head>
@@ -261,94 +284,68 @@
         <div class="brand-mark" aria-hidden="true">🩺</div>
         <h1 class="brand-name">VenomGuard AI</h1>
       </div>
-      <div class="badge">Healthcare Worker</div>
+      <span class="badge">Live</span>
     </header>
 
-    <section class="hero" aria-labelledby="chw-home-heading">
-      <div class="hero-top">
-        <div>
-          <h2 id="chw-home-heading" class="hero-title">Welcome, {{ user_name }}</h2>
-          <p class="hero-subtitle">{{ role_label }} case visibility dashboard</p>
-        </div>
-      </div>
+    <a class="primary-btn" href="{% url 'snakebite:report_sighting' %}">New Snakebite Case</a>
 
-      <div class="metrics" aria-label="Health worker summary metrics">
-        {% for metric in metric_cards %}
-          <a class="metric-link" href="{% url 'snakebite:case_metric_list' metric=metric.url_param %}">
-            <article class="metric-card">
-              <p class="metric-value">{{ metric.count }}</p>
-              <p class="metric-label">{{ metric.label }}</p>
-            </article>
-          </a>
-        {% empty %}
-          <a class="metric-link" href="{% url 'snakebite:chw_dashboard' %}">
-            <article class="metric-card">
-              <p class="metric-value">{{ active_cases }}</p>
-              <p class="metric-label">Active Cases</p>
-            </article>
-          </a>
-        {% endfor %}
+    <section class="stats-grid" aria-label="Quick stats">
+      <article class="stat-card">
+        <p class="stat-value">{{ active_cases }}</p>
+        <p class="stat-label">My Cases</p>
+      </article>
+      <article class="stat-card">
+        <p class="stat-value">{{ new_alerts }}</p>
+        <p class="stat-label">Alerts</p>
+      </article>
+      <article class="stat-card">
+        <p class="stat-value">{{ pending_referrals }}</p>
+        <p class="stat-label">Referrals</p>
+      </article>
+      <article class="stat-card">
+        <a class="resources-link" href="{% url 'snakebite:case_metric_list' metric='risk_alerts' %}">Guidelines</a>
+      </article>
+    </section>
+
+    <section class="summary-block" aria-label="Summary statistics">
+      <h3 class="section-label">Summary</h3>
+      <div class="summary-grid">
+        <article class="mini-stat">
+          <p class="value">{{ total_cases }}</p>
+          <p class="label">Total Cases</p>
+        </article>
+        <article class="mini-stat">
+          <p class="value">{{ high_risk_cases }}</p>
+          <p class="label">High Risk Cases</p>
+        </article>
+        <article class="mini-stat">
+          <p class="value">{{ referrals_made }}</p>
+          <p class="label">Referrals Made</p>
+        </article>
+        <article class="mini-stat">
+          <p class="value">{{ completed_outcomes }}</p>
+          <p class="label">Completed Outcomes</p>
+        </article>
       </div>
     </section>
 
-    <div style="margin-top: 18px;">
-      <div class="quick-actions">
-        <a class="action-card" href="{% url 'snakebite:chw_dashboard' %}">
-          <div class="action-row">
-            <p class="action-label">Analytics Dashboard</p>
-            <span aria-hidden="true">→</span>
-          </div>
-          <p class="action-copy">Track daily risk patterns, referrals, and monitoring outcomes.</p>
-        </a>
-        {% if latest_case %}
-          <a class="action-card" href="{% url 'snakebite:case_details' pk=latest_case.pk %}">
-            <div class="action-row">
-              <p class="action-label">Case Details</p>
-              <span aria-hidden="true">→</span>
-            </div>
-            <p class="action-copy">Review current patient symptoms, notes, and assigned response.</p>
-          </a>
-        {% else %}
-          <a class="action-card" href="{% url 'snakebite:report_sighting' %}">
-            <div class="action-row">
-              <p class="action-label">Create a Case</p>
-              <span aria-hidden="true">→</span>
-            </div>
-            <p class="action-copy">No case exists yet. Add a fresh patient record to begin triage.</p>
-          </a>
-        {% endif %}
-      </div>
-    </div>
-
-    <div class="cta-bar">
-      <a href="{% url 'snakebite:chw_dashboard' %}" class="cta-button">Open Dashboard</a>
-    </div>
+    <section class="panel" aria-label="Recent alerts">
+      <h3 class="section-label">Recent Alerts</h3>
+      <ul class="alert-list">
+        {% for item in recent_alerts %}
+          <li class="alert-item">
+            <p class="alert-message">{{ item.message }}</p>
+            <span class="alert-time">{{ item.time|date:'M d, Y H:i' }}</span>
+          </li>
+        {% empty %}
+          <li class="alert-item">
+            <p class="alert-message">No new alerts. All monitored cases remain stable.</p>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
   </main>
 
-  <nav class="bottom-nav" aria-label="Primary navigation" style="position:fixed; left:50%; transform:translateX(-50%); bottom:0; width:min(480px,100%); background:rgba(255,255,255,0.96); border-top:1px solid #dfe8e2; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); z-index:20; padding:10px 8px 14px;">
-    <a href="{% url 'snakebite:chw_home' %}" style="display:flex; flex-direction:column; align-items:center; text-decoration:none; color:#4d665f; font-size:0.72rem; font-weight:700;">
-      <span style="font-size:1.2rem;">⌂</span>
-      <span>Home</span>
-    </a>
-    {% if latest_case %}
-      <a href="{% url 'snakebite:case_details' pk=latest_case.pk %}" style="display:flex; flex-direction:column; align-items:center; text-decoration:none; color:#4d665f; font-size:0.72rem; font-weight:700;">
-        <span style="font-size:1.2rem;">▣</span>
-        <span>Cases</span>
-      </a>
-    {% else %}
-      <a href="{% url 'snakebite:chw_home' %}" style="display:flex; flex-direction:column; align-items:center; text-decoration:none; color:#4d665f; font-size:0.72rem; font-weight:700;">
-        <span style="font-size:1.2rem;">▣</span>
-        <span>Cases</span>
-      </a>
-    {% endif %}
-    <a href="{% url 'snakebite:chw_dashboard' %}" style="display:flex; flex-direction:column; align-items:center; text-decoration:none; color:#4d665f; font-size:0.72rem; font-weight:700;">
-      <span style="font-size:1.2rem;">⚑</span>
-      <span>Alerts</span>
-    </a>
-    <a href="{% url 'snakebite:settings' %}" style="display:flex; flex-direction:column; align-items:center; text-decoration:none; color:#4d665f; font-size:0.72rem; font-weight:700;">
-      <span style="font-size:1.2rem;">⚙</span>
-      <span>Settings</span>
-    </a>
-  </nav>
+  {% include 'snakebite/partials/bottom_nav.html' with nav_role='healthcare' latest_case=latest_case %}
 </body>
 </html>

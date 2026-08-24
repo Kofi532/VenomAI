@@ -1,203 +1,262 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VenomGuard AI | Assessment</title>
-  <style>
-    :root {
-      --bg: #f5f7f3;
-      --panel: #ffffff;
-      --text: #17332d;
-      --muted: #526d65;
-      --primary: #0f7a65;
-      --primary-soft: #ebf7f2;
-      --border: #dfe7e1;
-      --shadow: 0 10px 28px rgba(17, 49, 39, 0.06);
-    }
+{% extends 'snakebite/base.html' %}
+{% load static %}
 
-    * { box-sizing: border-box; }
+{% block title %}VenomGuard AI | Bite Assessment{% endblock %}
+
+{% block extra_styles %}
+<style>
     body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+        background: #07130f;
+        color: #edf7f3;
     }
-
-    .screen {
-      max-width: 480px;
-      margin: 0 auto;
-      min-height: 100vh;
-      background: var(--bg);
-      padding: 22px 16px 90px;
+    .page-shell {
+        max-width: 480px;
+        padding-top: 18px;
+        padding-bottom: 110px;
     }
-
+    .timeline-page {
+        min-height: 100vh;
+        background: radial-gradient(circle at top, rgba(38, 92, 88, 0.28), transparent 28%), #07130f;
+        color: #edf7f3;
+        padding: 14px 14px 24px;
+    }
+    .timeline-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 4px 16px;
+    }
+    .title-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .clock-mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(136, 192, 255, 0.12);
+        border: 1px solid rgba(136, 192, 255, 0.28);
+        color: #9ecbff;
+        font-size: 18px;
+    }
+    .timeline-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin: 0;
+        color: #f5f7fb;
+    }
     .progress {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 22px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 20px;
     }
-
     .step {
-      height: 42px;
-      border-radius: 999px;
-      display: grid;
-      place-items: center;
-      font-weight: 700;
-      font-size: 0.9rem;
-      background: #edf2ee;
-      color: var(--muted);
-      border: 1px solid var(--border);
+        height: 42px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        background: rgba(255,255,255,0.04);
+        color: #b8d4ca;
+        border: 1px solid rgba(255,255,255,0.06);
     }
-
     .step.active {
-      background: var(--primary-soft);
-      color: var(--primary);
-      border-color: rgba(15, 122, 101, 0.15);
-      box-shadow: inset 0 0 0 1px rgba(15, 122, 101, 0.12);
+        background: rgba(247, 202, 77, 0.12);
+        color: #ffd778;
+        border-color: rgba(255, 192, 94, 0.45);
     }
-
+    .assessment-card {
+        background: rgba(19, 35, 31, 0.9);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 18px;
+        padding: 18px 16px;
+        margin-bottom: 18px;
+        box-shadow: 0 15px 25px rgba(0,0,0,0.14);
+    }
+    .section-copy {
+        margin: 0 0 14px;
+        color: #aed0c5;
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+    .risk-result-preview {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        margin-bottom: 14px;
+        border-radius: 999px;
+        background: rgba(255, 191, 72, 0.12);
+        border: 1px solid rgba(255, 192, 94, 0.45);
+        color: #ffd778;
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 800;
+    }
     h2 {
-      margin: 0 0 18px;
-      font-size: 1.8rem;
-      line-height: 1.2;
+        margin: 0 0 14px;
+        font-size: 1.5rem;
+        line-height: 1.25;
+        color: #f4f9f7;
     }
-
     .choice-grid {
-      display: grid;
-      gap: 12px;
-      margin-bottom: 18px;
+        display: grid;
+        gap: 12px;
+        margin-bottom: 18px;
     }
-
     .choice-card {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 18px 16px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      box-shadow: var(--shadow);
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 18px;
+        padding: 16px 14px;
+        color: #edf7f3;
+        cursor: pointer;
     }
-
+    .choice-card input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
     .choice-card .icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
-      background: #edf9f4;
-      display: grid;
-      place-items: center;
-      font-size: 1.6rem;
-      color: var(--primary);
-      flex-shrink: 0;
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: rgba(247, 202, 77, 0.12);
+        color: #ffd778;
+        font-size: 1.6rem;
+        flex-shrink: 0;
     }
-
     .choice-text strong {
-      display: block;
-      font-size: 1.05rem;
-      margin-bottom: 4px;
+        display: block;
+        font-size: 1rem;
+        margin-bottom: 4px;
     }
-
     .choice-text span {
-      color: var(--muted);
-      font-size: 0.88rem;
+        color: #bbd1c8;
+        font-size: 0.8rem;
     }
-
+    .choice-card:has(input:checked) {
+        border-color: rgba(255, 192, 94, 0.7);
+        background: linear-gradient(135deg, rgba(255, 191, 72, 0.18), rgba(255, 182, 30, 0.08));
+    }
+    .symptom-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+    .symptom-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        color: #ebf5f1;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+    .symptom-option input {
+        accent-color: #ffd778;
+        transform: scale(1.1);
+    }
     .footer {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      margin-top: 10px;
+        display: flex;
+        gap: 12px;
+        margin-top: 18px;
     }
-
-    .btn {
-      border: none;
-      border-radius: 12px;
-      min-height: 50px;
-      padding: 0 20px;
-      font-weight: 700;
-      font-size: 0.96rem;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
+    .footer > * {
+        flex: 1;
     }
+</style>
+{% endblock %}
 
-    .btn-back {
-      background: white;
-      color: var(--text);
-      border: 1px solid var(--border);
-      flex: 1;
-    }
+{% block content %}
+<div class="timeline-page">
+    <header class="timeline-topbar" aria-label="Assessment header">
+        <div class="title-group">
+            <span class="clock-mark" aria-hidden="true">⚕</span>
+            <h1 class="timeline-title">Bite Assessment</h1>
+        </div>
+    </header>
 
-    .btn-next {
-      background: var(--primary);
-      color: white;
-      flex: 1.2;
-      box-shadow: 0 10px 18px rgba(15, 122, 101, 0.22);
-    }
-  </style>
-</head>
-<body>
-  <main class="screen">
-    <div class="progress" aria-label="Assessment progress">
-      <div class="step active">1</div>
-      <div class="step">2</div>
-      <div class="step">3</div>
-      <div class="step">4</div>
-    </div>
+    <form method="post" class="assessment-card">
+        {% csrf_token %}
+        <input type="hidden" name="step" value="{{ current_step|default:1 }}" />
+        <div class="progress" aria-label="Assessment progress">
+            {% for step_number in '1234' %}
+                <div class="step {% if current_step == step_number|add:0 %}active{% endif %}">{{ step_number }}</div>
+            {% endfor %}
+        </div>
 
-    <h2>What type of snake bit the person?</h2>
+        <div class="section-copy">Assessment progress</div>
+        <div class="risk-result-preview">Risk result</div>
 
-    <form method="post">
-      {% csrf_token %}
-      <div class="choice-grid">
-        <label class="choice-card" for="viper">
-          <input id="viper" type="radio" name="snake_type" value="viper" checked hidden>
-          <span class="icon" aria-hidden="true">🐍</span>
-          <span class="choice-text">
-            <strong>Viper</strong>
-            <span>Short, thick body</span>
-          </span>
-        </label>
+        {% if current_step == 1 %}
+            <h2>What type of snake bit the person?</h2>
+            <div class="section-copy">Snake type</div>
+            <div class="choice-grid">
+                <label class="choice-card" for="snake_viper">
+                    <input id="snake_viper" type="radio" name="snake_type" value="viper" {% if selected_snake == 'viper' or selected_snake == 'unknown' %}checked{% endif %}>
+                    <span class="icon" aria-hidden="true">🐍</span>
+                    <span class="choice-text"><strong>Viper</strong><span>Short, thick body</span></span>
+                </label>
+                <label class="choice-card" for="snake_cobra">
+                    <input id="snake_cobra" type="radio" name="snake_type" value="cobra" {% if selected_snake == 'cobra' %}checked{% endif %}>
+                    <span class="icon" aria-hidden="true">🩺</span>
+                    <span class="choice-text"><strong>Cobra</strong><span>Spread hood</span></span>
+                </label>
+                <label class="choice-card" for="snake_mamba">
+                    <input id="snake_mamba" type="radio" name="snake_type" value="mamba" {% if selected_snake == 'mamba' %}checked{% endif %}>
+                    <span class="icon" aria-hidden="true">🌿</span>
+                    <span class="choice-text"><strong>Mamba</strong><span>Long, slender</span></span>
+                </label>
+                <label class="choice-card" for="snake_other">
+                    <input id="snake_other" type="radio" name="snake_type" value="other" {% if selected_snake == 'other' %}checked{% endif %}>
+                    <span class="icon" aria-hidden="true">❓</span>
+                    <span class="choice-text"><strong>Other / Don’t know</strong><span>Unsure of the snake type</span></span>
+                </label>
+            </div>
+        {% else %}
+            <h2>What symptoms are present?</h2>
+            <div class="section-copy">Symptoms</div>
+            <div class="symptom-grid">
+                {% for symptom in symptoms %}
+                <label class="symptom-option">
+                    <input type="checkbox" name="symptoms" value="{{ symptom.slug|default:symptom.name|lower }}" {% if symptom.name in selected_symptoms or symptom.slug in selected_symptoms %}checked{% endif %}>
+                    <span>{{ symptom.name }}</span>
+                </label>
+                {% empty %}
+                <label class="symptom-option"><input type="checkbox" name="symptoms" value="swelling" checked><span>Swelling</span></label>
+                <label class="symptom-option"><input type="checkbox" name="symptoms" value="bleeding-gums"><span>Bleeding gums</span></label>
+                {% endfor %}
+            </div>
+        {% endif %}
 
-        <label class="choice-card" for="cobra">
-          <input id="cobra" type="radio" name="snake_type" value="cobra" hidden>
-          <span class="icon" aria-hidden="true">🩺</span>
-          <span class="choice-text">
-            <strong>Cobra</strong>
-            <span>Spread hood</span>
-          </span>
-        </label>
+        <input type="hidden" name="location" value="{{ selected_country_label|default:'Ghana' }}">
 
-        <label class="choice-card" for="mamba">
-          <input id="mamba" type="radio" name="snake_type" value="mamba" hidden>
-          <span class="icon" aria-hidden="true">🌿</span>
-          <span class="choice-text">
-            <strong>Mamba</strong>
-            <span>Long, slender</span>
-          </span>
-        </label>
-
-        <label class="choice-card" for="other">
-          <input id="other" type="radio" name="snake_type" value="other" hidden>
-          <span class="icon" aria-hidden="true">❓</span>
-          <span class="choice-text">
-            <strong>Other / Don’t know</strong>
-            <span>Unsure of the snake type</span>
-          </span>
-        </label>
-      </div>
-
-      <div class="footer">
-        <a class="btn btn-back" href="{% url 'snakebite:community_home' %}">Back</a>
-        <button class="btn btn-next" type="submit">Next</button>
-      </div>
+        <div class="footer">
+            <a class="secondary-btn" href="{% if current_step == 1 %}{% url 'snakebite:community_home' %}{% else %}{% url 'snakebite:community_bite_assessment' %}?step=1{% endif %}">Back</a>
+            <button class="primary-btn" type="submit" name="next_step" value="evaluate">{% if current_step == 1 %}Next{% else %}Next{% endif %}</button>
+        </div>
     </form>
-
-    {% include 'snakebite/_community_bottom_nav.html' %}
-  </main>
-</body>
-</html>
+</div>
+{% endblock %}

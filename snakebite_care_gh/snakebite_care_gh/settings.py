@@ -12,6 +12,28 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
+# Work around Django 4.2's template context copy bug on Python 3.14.
+# Python 3.14 changed super() object copying semantics, and Django 4.2 still
+# calls copy(super()) internally when test clients record rendered templates.
+# Patch the method before templates are rendered.
+from django.template import context as template_context
+
+
+def _patch_django_context_copy():
+    original = template_context.BaseContext.__copy__
+
+    def compat_copy(self):
+        duplicate = self.__class__.__new__(self.__class__)
+        duplicate.__dict__ = self.__dict__.copy()
+        duplicate.dicts = self.dicts[:]
+        return duplicate
+
+    template_context.BaseContext.__copy__ = compat_copy
+    return original
+
+
+_patch_django_context_copy()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -56,7 +78,7 @@ ROOT_URLCONF = 'snakebite_care_gh.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

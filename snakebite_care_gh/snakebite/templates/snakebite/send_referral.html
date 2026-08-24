@@ -1,173 +1,234 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VenomGuard AI | Send Referral</title>
-  <style>
-    :root {
-      --bg: #eefaf3;
-      --panel: #ffffff;
-      --text: #16352e;
-      --muted: #587067;
-      --primary: #0d7b5a;
-      --primary-dark: #0b5f48;
-      --line: #dfe8e1;
-      --soft: #edf9f1;
-      --success: #28a68d;
+{% extends 'snakebite/base.html' %}
+
+{% block title %}Send Referral | VenomGuard AI{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .referral-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: linear-gradient(180deg, #eef8f2, #f6faf7 100%);
-      color: var(--text);
+    .referral-kicker {
+        margin: 0 0 6px;
+        color: var(--gold);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
     }
-    .screen {
-      max-width: 480px;
-      margin: 0 auto;
-      min-height: 100vh;
-      padding: 18px 16px 88px;
-      background: var(--bg);
+    .referral-title {
+        margin: 0;
+        font-size: 25px;
+        line-height: 1.15;
     }
-    .topbar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 16px;
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        flex: 0 0 40px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(255,255,255,0.04);
+        color: var(--text);
+        font-size: 20px;
     }
-    .brand-mark {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, var(--primary), #1fa17c);
-      color: white;
-      font-size: 18px;
+    .referral-intro {
+        margin: 0 0 18px;
+        color: var(--muted);
+        line-height: 1.5;
     }
-    .title {
-      margin: 0;
-      font-size: 1.3rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+    .case-banner,
+    .facility-panel,
+    .form-panel {
+        margin-bottom: 16px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
     }
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 16px;
-      box-shadow: 0 10px 22px rgba(17, 62, 47, 0.05);
-      margin-bottom: 16px;
+    .case-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        background: linear-gradient(135deg, rgba(245,184,0,0.12), var(--panel));
+        border-color: rgba(245,184,0,0.25);
     }
-    .meta {
-      margin: 0 0 12px;
-      color: var(--muted);
-      font-size: 0.8rem;
-      line-height: 1.5;
+    .eyebrow {
+        margin: 0 0 5px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
     }
-    label {
-      display: block;
-      margin: 10px 0 6px;
-      font-size: 0.72rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      font-weight: 800;
+    .case-reference {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 800;
     }
-    select, textarea, input[type="checkbox"] {
-      width: 100%;
+    .case-meta {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.4;
     }
-    select, textarea {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: #f8fbf9;
-      padding: 12px 12px;
-      font-size: 0.96rem;
-      color: var(--text);
-      resize: vertical;
+    .risk-badge {
+        flex: 0 0 auto;
+        padding: 7px 10px;
+        border: 1px solid rgba(255,59,48,0.3);
+        border-radius: 999px;
+        background: rgba(255,59,48,0.12);
+        color: #ff8d87;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
     }
-    textarea {
-      min-height: 120px;
+    .panel-heading {
+        margin: 0 0 12px;
+        font-size: 16px;
     }
-    .checkbox-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 14px 0 8px;
-      font-size: 0.9rem;
-      color: var(--text);
+    .suggested-facility {
+        padding: 13px;
+        border: 1px solid rgba(46,204,113,0.25);
+        border-radius: 14px;
+        background: rgba(46,204,113,0.07);
     }
-    .checkbox-row input {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--primary);
+    .facility-name {
+        margin: 0 0 5px;
+        font-size: 15px;
+        font-weight: 800;
+    }
+    .facility-detail {
+        margin: 3px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+    }
+    .field-label {
+        display: block;
+        margin: 0 0 7px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+    .form-group + .form-group {
+        margin-top: 16px;
+    }
+    .referral-field {
+        width: 100%;
+        margin: 0;
+        padding: 12px 13px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(255,255,255,0.03);
+        color: var(--text);
+        font: inherit;
+        font-size: 14px;
+    }
+    .referral-field:focus {
+        outline: 2px solid rgba(245,184,0,0.45);
+        outline-offset: 1px;
+    }
+    textarea.referral-field {
+        min-height: 120px;
+        resize: vertical;
+        line-height: 1.5;
     }
     .button-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 18px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 20px;
     }
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 48px;
-      border-radius: 12px;
-      border: none;
-      text-decoration: none;
-      font-size: 0.95rem;
-      font-weight: 800;
+    .button-row .primary-btn,
+    .button-row .secondary-btn {
+        min-height: 48px;
+        font-size: 14px;
     }
-    .button.primary {
-      background: var(--primary);
-      color: white;
+    @media (max-width: 360px) {
+        .button-row { grid-template-columns: 1fr; }
     }
-    .button.secondary {
-      background: var(--soft);
-      color: var(--primary-dark);
-      border: 1px solid var(--line);
-    }
-  </style>
-</head>
-<body>
-  <main class="screen">
-    {% include 'snakebite/_profile_nav.html' %}
-    <header class="topbar" aria-label="Referral header">
-      <div class="brand-mark" aria-hidden="true">📤</div>
-      <h1 class="title">Send Referral</h1>
-    </header>
+</style>
+{% endblock %}
 
-    <section class="panel">
-      <p class="meta"><strong>{{ case.case_id }}</strong> • {{ case.patient_name }} • {{ case.location }}</p>
-      <form method="post">
+{% block content %}
+<header class="referral-header">
+    <div>
+        <p class="referral-kicker">Care coordination</p>
+        <h1 class="referral-title">Send Referral</h1>
+    </div>
+    <a class="back-link" href="{% url 'snakebite:case_details' pk=case.pk %}" aria-label="Back to case details">&larr;</a>
+</header>
+
+<p class="referral-intro">Choose a receiving facility and share the information needed to coordinate urgent care.</p>
+
+<section class="case-banner" aria-label="Case summary">
+    <div>
+        <p class="eyebrow">Referral for</p>
+        <p class="case-reference">{{ case.case_id }}</p>
+        <p class="case-meta">{{ case.patient_name }} · {{ case.location }}</p>
+    </div>
+    <span class="risk-badge">{{ case.get_risk_level_display }} risk</span>
+</section>
+
+{% with suggested=suggested_facility.facility %}
+{% if suggested %}
+<section class="facility-panel" aria-labelledby="suggested-title">
+    <h2 class="panel-heading" id="suggested-title">Suggested facility</h2>
+    <div class="suggested-facility">
+        <p class="facility-name">{{ suggested.name }}</p>
+        <p class="facility-detail">{{ suggested_facility.distance_km }} km away · {{ suggested.get_facility_type_display }}</p>
+        <p class="facility-detail">Antivenom: {% if suggested_facility.antivenom_available %}Available{% else %}Limited{% endif %}</p>
+        <p class="facility-detail">Status: {{ suggested_facility.status_label|default:'Open 24/7' }}</p>
+    </div>
+</section>
+{% endif %}
+{% endwith %}
+
+<section class="form-panel" aria-labelledby="referral-form-title">
+    <h2 class="panel-heading" id="referral-form-title">Referral details</h2>
+    <form method="post">
         {% csrf_token %}
-        <label for="facility">Destination Facility</label>
-        <select id="facility" name="facility_id">
-          {% if facility %}
-            <option value="{{ facility.pk }}">{{ facility.name }} ({{ facility.get_facility_type_display }})</option>
-          {% endif %}
-          {% for available_facility in facilities|default:'' %}
-            <option value="{{ available_facility.pk }}">{{ available_facility.name }}</option>
-          {% endfor %}
-        </select>
+        <div class="form-group">
+            <label class="field-label" for="facility_id">Receiving facility</label>
+            <select class="referral-field" id="facility_id" name="facility_id">
+                {% for available_facility in facility_options %}
+                    <option value="{{ available_facility.pk }}" {% if suggested_facility and suggested_facility.facility.pk == available_facility.pk %}selected{% endif %}>
+                        {{ available_facility.name }}{% if available_facility.antivenom_available %} · Antivenom available{% endif %}
+                    </option>
+                {% empty %}
+                    <option value="">No facility available</option>
+                {% endfor %}
+            </select>
+        </div>
 
-        <label for="referral_note">Referral Note</label>
-        <textarea id="referral_note" name="referral_note">{{ default_note }}</textarea>
+        <div class="form-group">
+            <label class="field-label" for="referral_note">Referral note</label>
+            <textarea class="referral-field" id="referral_note" name="referral_note">{{ default_note }}</textarea>
+        </div>
 
-        <div class="checkbox-row">
-          <input id="share_details" type="checkbox" name="share_details" checked>
-          <label for="share_details" style="margin:0; letter-spacing: normal; text-transform: none; font-weight: 600; display: inline;">Share patient details with receiving facility</label>
+        <div class="form-group">
+            <label class="field-label" for="share_details">Share patient details</label>
+            <select class="referral-field" id="share_details" name="share_details">
+                <option value="yes" selected>Yes, share with receiving facility</option>
+                <option value="no">No, do not share</option>
+            </select>
         </div>
 
         <div class="button-row">
-          <button class="button primary" type="submit">Send</button>
-          <a class="button secondary" href="{% url 'snakebite:case_details' pk=case.pk %}">Cancel</a>
+            <button class="primary-btn" type="submit">Send Referral</button>
+            <a class="secondary-btn" href="{% url 'snakebite:case_details' pk=case.pk %}">Cancel</a>
         </div>
-      </form>
-    </section>
-  </main>
-</body>
-</html>
+    </form>
+</section>
+{% endblock %}

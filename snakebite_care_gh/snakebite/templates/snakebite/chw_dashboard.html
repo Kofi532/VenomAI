@@ -1,397 +1,464 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VenomGuard AI | CHW Dashboard</title>
-  <style>
-    :root {
-      --bg: #edf6f0;
-      --panel: #ffffff;
-      --panel-soft: #f4fbf6;
-      --text: #17332d;
-      --muted: #59716a;
-      --primary: #0d7b5a;
-      --primary-dark: #0b5f48;
-      --line: #dfe8e2;
-      --soft: #eff9f3;
-      --warning: #f3b666;
-      --warning-soft: #fff4d8;
-      --alert: #d95f5f;
-      --shadow: 0 10px 20px rgba(17, 62, 47, 0.05);
-    }
-    * { box-sizing: border-box; }
+{% extends 'snakebite/base.html' %}
+{% load static %}
+
+{% block title %}VenomGuard AI | CHW Dashboard{% endblock %}
+
+{% block extra_styles %}
+<style>
     body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: linear-gradient(180deg, #edf6f0, #f3f8f5 100%);
-      color: var(--text);
+        background: #07130f;
+        color: #edf7f3;
     }
-    a { text-decoration: none; color: inherit; }
-    .screen {
-      max-width: 480px;
-      margin: 0 auto;
-      min-height: 100vh;
-      padding: 18px 16px 90px;
-      background: var(--bg);
+    .page-shell {
+        max-width: 480px;
+        padding-top: 0;
+        padding-bottom: 110px;
     }
-    .heading {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 16px;
+    .timeline-page {
+        min-height: 100vh;
+        background:
+            radial-gradient(circle at top, rgba(38, 92, 88, 0.28), transparent 28%),
+            #07130f;
+        color: #edf7f3;
+        padding: 14px 14px 20px;
     }
-    .title {
-      margin: 0;
-      font-size: 1.5rem;
-      font-weight: 900;
-      letter-spacing: -0.04em;
+    .timeline-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 4px 16px;
     }
-    .badge {
-      background: rgba(13, 123, 90, 0.08);
-      color: var(--primary-dark);
-      border-radius: 999px;
-      padding: 7px 10px;
-      font-size: 0.7rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+    .title-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 18px;
+    .clock-mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(136, 192, 255, 0.12);
+        border: 1px solid rgba(136, 192, 255, 0.28);
+        color: #9ecbff;
+        font-size: 18px;
+    }
+    .timeline-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin: 0;
+        color: #f5f7fb;
+    }
+    .live-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 7px 12px;
+        background: rgba(30, 63, 48, 0.8);
+        border: 1px solid rgba(82, 235, 126, 0.28);
+        color: #d7f9dd;
+        font-size: 0.72rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .live-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #48d17b;
+        box-shadow: 0 0 0 5px rgba(72, 209, 123, 0.14);
+    }
+    .greeting {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 8px 0 18px;
+    }
+    .greeting-title {
+        margin: 0;
+        font-size: 1.7rem;
+        line-height: 1.1;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: #f5f7fb;
+    }
+    .role-line {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+        color: #a8c9be;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: rgba(13, 123, 90, 0.08);
+        color: #d7f9dd;
+        border: 1px solid rgba(82, 235, 126, 0.28);
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+    .role-name {
+        font-size: 0.68rem;
+        letter-spacing: 0.06em;
+        color: #a8c9be;
+        text-transform: uppercase;
+        font-weight: 800;
+    }
+    .primary-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 52px;
+        width: 100%;
+        border: none;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #f7ca4d, #ffb835);
+        color: #0e1a1d;
+        text-decoration: none;
+        font-size: 1rem;
+        font-weight: 800;
+        box-shadow: 0 14px 24px rgba(247, 202, 77, 0.18);
+        margin-bottom: 18px;
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin: 6px 0 18px;
     }
     .stat-card {
-      display: block;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 14px;
-      box-shadow: var(--shadow);
-      min-height: 130px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        background: rgba(19, 35, 31, 0.9);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 18px;
+        padding: 14px 12px;
+        box-shadow: 0 12px 20px rgba(0,0,0,0.12);
+        transition: transform 0.15s ease, border-color 0.15s ease;
     }
-    .stat-card:hover,
-    .stat-card:focus-visible {
-      transform: translateY(-1px);
-      box-shadow: 0 12px 22px rgba(17, 62, 47, 0.07);
-    }
-    .stat-card.active {
-      border-color: rgba(13, 123, 90, 0.35);
-      box-shadow: 0 12px 18px rgba(13, 123, 90, 0.08);
-      background: linear-gradient(180deg, #ffffff 0%, #f1faf5 100%);
-    }
-    .stat-card.warning {
-      background: linear-gradient(180deg, #fffdf8 0%, #fff7e5 100%);
-    }
-    .stat-card.alert {
-      background: linear-gradient(180deg, #fffafa 0%, #fff0f0 100%);
+    .stat-card:hover {
+        transform: translateY(-1px);
+        border-color: rgba(255, 191, 72, 0.42);
     }
     .stat-value {
-      margin: 0;
-      font-size: 1.8rem;
-      font-weight: 900;
-      color: var(--primary-dark);
-      letter-spacing: -0.04em;
+        margin: 0;
+        font-size: 1.65rem;
+        font-weight: 900;
+        color: #f8fbfa;
     }
     .stat-label {
-      margin: 6px 0 0;
-      font-size: 0.72rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      font-weight: 800;
+        margin: 8px 0 0;
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #a8c9be;
+        font-weight: 800;
     }
-    .stat-note {
-      margin: 4px 0 0;
-      color: var(--muted);
-      font-size: 0.74rem;
-      font-weight: 700;
+    .filter-row {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding: 4px 2px 14px;
+        margin-bottom: 8px;
     }
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: var(--shadow);
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter-pill {
+        flex: 0 0 auto;
+        min-width: 100px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.04);
+        color: #d9e9e3;
+        border-radius: 999px;
+        padding: 10px 16px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        cursor: pointer;
     }
-    .panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
+    .filter-pill.active {
+        background: linear-gradient(135deg, rgba(255, 191, 72, 0.25), rgba(255, 182, 30, 0.14));
+        border-color: rgba(255, 192, 94, 0.7);
+        color: #ffd778;
+        box-shadow: 0 6px 18px rgba(255, 182, 30, 0.18);
+    }
+    .timeline-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-top: 8px;
+    }
+    .case-card {
+        display: grid;
+        grid-template-columns: 84px minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+        padding: 12px 12px;
+        border-radius: 18px;
+        background: rgba(19, 31, 27, 0.9);
+        border: 1px solid rgba(255,255,255,0.06);
+        box-shadow: 0 15px 25px rgba(0,0,0,0.14);
+        text-decoration: none;
+        color: inherit;
+    }
+    .case-card.hidden { display: none; }
+    .thumb {
+        width: 84px;
+        height: 84px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255,255,255,0.8);
+        font-size: 1.8rem;
+        position: relative;
+    }
+    .thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    .thumb-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        gap: 4px;
+        background: linear-gradient(135deg, rgba(255, 201, 91, 0.15), rgba(148, 163, 184, 0.08));
+        color: #dfece8;
+        text-align: center;
+        padding: 8px 6px;
+    }
+    .thumb-placeholder .placeholder-icon { font-size: 1.4rem; }
+    .thumb-placeholder .placeholder-text {
+        font-size: 0.5rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        opacity: 0.8;
+    }
+    .card-body {
+        min-width: 0;
+    }
+    .headline {
+        margin: 0;
+        font-size: 0.87rem;
+        font-weight: 800;
+        color: #f8fbfa;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+    .subtitle {
+        margin: 5px 0 6px;
+        color: #bdcfc9;
+        font-size: 0.74rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .meta-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        font-size: 0.7rem;
+        color: #8daaa1;
+    }
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 62px;
+        padding: 7px 8px;
+        border-radius: 999px;
+        font-size: 0.64rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border: 1px solid transparent;
+    }
+    .badge.high { background: rgba(255, 85, 71, 0.16); color: #ff9a94; border-color: rgba(255, 85, 71, 0.26); }
+    .badge.medium { background: rgba(255, 174, 73, 0.14); color: #ffce7a; border-color: rgba(255, 174, 73, 0.26); }
+    .badge.low { background: rgba(148, 163, 184, 0.13); color: #d2dae5; border-color: rgba(148, 163, 184, 0.22); }
+    .alert-list {
+        list-style: none;
+        margin: 18px 0 0;
+        padding: 0;
+        display: grid;
+        gap: 10px;
+    }
+    .alert-item {
+        background: rgba(19, 35, 31, 0.8);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 14px;
+        padding: 12px;
+    }
+    .alert-message {
+        margin: 0;
+        line-height: 1.5;
+        font-weight: 700;
+        color: #edf7f3;
+    }
+    .alert-time {
+        display: block;
+        margin-top: 8px;
+        color: #a8c9be;
+        font-size: 0.72rem;
+        font-weight: 700;
     }
     .panel-title {
-      margin: 0;
-      font-size: 0.78rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      font-weight: 800;
+        margin: 0 0 12px;
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        color: #a8c9be;
+        text-transform: uppercase;
+        font-weight: 800;
     }
-    .panel-tag {
-      color: var(--primary-dark);
-      background: var(--soft);
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 0.68rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+    @media (min-width: 540px) {
+        .timeline-page { padding: 18px 16px 24px; }
     }
-    .alert-list,
-    .record-list {
-      display: grid;
-      gap: 10px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-    .alert-item,
-    .record-item {
-      background: var(--soft);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 12px;
-      position: relative;
-    }
-    .new-ribbon {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: #ffefb3;
-      color: #7a5500;
-      border-radius: 999px;
-      padding: 4px 8px;
-      font-size: 0.62rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      border: 1px solid rgba(122, 85, 0, 0.15);
-    }
-    .alert-message,
-    .record-title {
-      margin: 0;
-      font-weight: 700;
-      line-height: 1.5;
-      padding-right: 48px;
-    }
-    .alert-time,
-    .record-meta {
-      display: block;
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-    .record-label {
-      display: inline-block;
-      margin-top: 8px;
-      background: rgba(13, 123, 90, 0.08);
-      color: var(--primary-dark);
-      padding: 5px 8px;
-      border-radius: 999px;
-      font-size: 0.62rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      min-height: 50px;
-      border: none;
-      border-radius: 14px;
-      background: linear-gradient(135deg, var(--primary), #1ea37a);
-      color: white;
-      text-decoration: none;
-      font-size: 0.96rem;
-      font-weight: 800;
-      margin-top: 10px;
-    }
-  </style>
-</head>
-<body>
-  <main class="screen">
-    {% include 'snakebite/_profile_nav.html' %}
-    <div class="heading">
-      <h1 class="title">Dashboard</h1>
-      <span class="badge">Live</span>
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="timeline-page">
+    <header class="timeline-topbar" aria-label="CHW dashboard header">
+        <div class="title-group">
+            <span class="clock-mark" aria-hidden="true">◔</span>
+            <h1 class="timeline-title">Healthcare Dashboard</h1>
+        </div>
+        <span class="live-pill"><span class="live-dot"></span>Live</span>
+    </header>
+
+    <a class="primary-btn" href="{% url 'snakebite:report_sighting' %}">New Snakebite Case</a>
+
+    <section class="stats-grid" aria-label="Case summary metrics">
+        <a class="stat-card" href="{% url 'snakebite:case_metric_list' metric='active_cases' %}">
+            <p class="stat-value">{{ active_cases }}</p>
+            <p class="stat-label">My Cases</p>
+        </a>
+        <a class="stat-card" href="{% url 'snakebite:case_metric_list' metric='risk_alerts' %}">
+            <p class="stat-value">{{ new_alerts }}</p>
+            <p class="stat-label">Alerts</p>
+        </a>
+        <a class="stat-card" href="{% url 'snakebite:case_metric_list' metric='risk_alerts' %}">
+            <p class="stat-value">{{ high_risk_cases }}</p>
+            <p class="stat-label">High Risk</p>
+        </a>
+        <a class="stat-card" href="{% url 'snakebite:case_metric_list' metric='referrals' %}">
+            <p class="stat-value">{{ referrals_made }}</p>
+            <p class="stat-label">Referrals</p>
+        </a>
+    </section>
+
+    <div class="filter-row" aria-label="Case filters">
+        <button class="filter-pill {% if filter_name == 'all' %}active{% endif %}" type="button" data-filter="all">All Cases</button>
+        <button class="filter-pill {% if filter_name == 'open' %}active{% endif %}" type="button" data-filter="open">Open</button>
+        <button class="filter-pill {% if filter_name == 'high' %}active{% endif %}" type="button" data-filter="high">High Risk</button>
+        <button class="filter-pill {% if filter_name == 'resolved' %}active{% endif %}" type="button" data-filter="resolved">Resolved</button>
     </div>
 
-    <section class="stats" aria-label="Health worker statistics">
-      {% for metric in metrics %}
-        <a
-          href="?filter={{ metric.key }}"
-          class="stat-card {% if active_filter == metric.key %}active{% endif %} {% if metric.key == 'alerts' %}warning{% elif metric.key == 'referrals' %}alert{% elif metric.key == 'resources' %}alert{% endif %}"
-          aria-label="View {{ metric.label }} records"
-        >
-          <div>
-            <p class="stat-value">{{ metric.count }}</p>
-            <p class="stat-label">{{ metric.label }}</p>
-          </div>
-          <div>
-            <p class="stat-note">{{ metric.note }}</p>
-          </div>
+    <div class="timeline-list" aria-live="polite">
+        {% for item in cases %}
+        <a href="{% url 'snakebite:case_details' pk=item.case.pk %}" class="case-card" data-status="{{ item.case.status }}" data-risk="{{ item.case.risk_level }}" data-filter="{{ item.case.status }} {{ item.case.risk_level }}">
+            <div class="thumb" aria-hidden="true">
+                {% if item.photo_url %}
+                    <img src="{{ item.photo_url }}" alt="{{ item.patient_name }} case photo" onerror="this.parentElement.innerHTML='<div class=\'thumb-placeholder\' aria-label=\'No uploaded image yet\'><span class=\'placeholder-icon\'>🖼️</span><span class=\'placeholder-text\'>No image</span></div>'">
+                {% else %}
+                    <div class="thumb-placeholder">
+                        <span class="placeholder-icon">✚</span>
+                        <span class="placeholder-text">Case</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <h2 class="headline">{{ item.patient_name }}</h2>
+                <p class="subtitle">{{ item.location }} • {{ item.case_id }}</p>
+                <div class="meta-row">
+                    <span class="badge {{ item.case.risk_level }}">{{ item.case.get_risk_level_display }}</span>
+                    <span>{{ item.case.get_status_display }}</span>
+                </div>
+            </div>
+            <div class="meta-row" style="flex-direction:column; align-items:flex-end; font-size:0.68rem;">
+                <span>{{ item.case.created_at|date:'M d' }}</span>
+                <span>{{ item.case.created_at|time:'H:i' }}</span>
+            </div>
         </a>
-      {% endfor %}
-    </section>
-
-    <section class="panel" aria-label="Recent alerts and updates">
-      <div class="panel-header">
-        <h2 class="panel-title">{{ record_label }}</h2>
-        <span class="panel-tag">{{ record_note }}</span>
-      </div>
-      <ul class="record-list">
-        {% for item in record_items %}
-          {% if active_filter == 'cases' %}
-            <li class="record-item">
-              {% if item.created_at >= now|add:"-1 day" %}
-                <span class="new-ribbon">New</span>
-              {% endif %}
-              <a href="{% url 'snakebite:case_details' pk=item.pk %}" aria-label="View full case record for {{ item.case_id }}">
-                <p class="record-title">{{ item.patient_name }} • {{ item.case_id }}</p>
-                <span class="record-meta">{{ item.status|title }} • {{ item.risk_level|title }} • {{ item.created_at|date:'M d, Y H:i' }}</span>
-                <span class="record-label">Case</span>
-              </a>
-            </li>
-          {% elif active_filter == 'alerts' %}
-            <li class="record-item">
-              {% if item.created_at >= now|add:"-1 day" %}
-                <span class="new-ribbon">New</span>
-              {% endif %}
-              <a href="{% url 'snakebite:case_details' pk=item.pk %}" aria-label="View full case record for {{ item.case_id }}">
-                <p class="record-title">{{ item.case_id }} • {{ item.patient_name }}</p>
-                <span class="record-meta">{{ item.risk_level|title }} risk • {{ item.created_at|date:'M d, Y H:i' }}</span>
-                <span class="record-label">Alert</span>
-              </a>
-            </li>
-          {% elif active_filter == 'referrals' %}
-            <li class="record-item">
-              <a href="{% url 'snakebite:case_details' pk=item.case.pk %}" aria-label="View case record for referral {{ item.case.case_id }}">
-                <p class="record-title">{{ item.case.case_id }} • {{ item.destination_facility.name }}</p>
-                <span class="record-meta">{{ item.status|title }} • {{ item.sent_at|date:'M d, Y H:i' }}</span>
-                <span class="record-label">Referral</span>
-              </a>
-            </li>
-          {% else %}
-            <li class="record-item">
-              <a href="{% url 'snakebite:education_training' %}" aria-label="View resource {{ item.title }}">
-                <p class="record-title">{{ item.title }}</p>
-                <span class="record-meta">{{ item.category|title }} • {% if item.file_attachment %}Download available{% else %}Reference material{% endif %}</span>
-                <span class="record-label">Resource</span>
-              </a>
-            </li>
-          {% endif %}
         {% empty %}
-          <li class="record-item">
-            <p class="record-title">No records found for this view.</p>
-          </li>
+        <div class="alert-item">
+            <p class="alert-message">No cases match this filter yet.</p>
+        </div>
         {% endfor %}
-      </ul>
+    </div>
+
+    <section class="panel" aria-label="Recent alerts and updates" style="margin-top:18px; background:rgba(19,35,31,0.9); border:1px solid rgba(255,255,255,0.05); border-radius:18px; padding:16px;">
+        <h2 class="panel-title">Recent Alerts</h2>
+        <ul class="alert-list">
+            {% for item in recent_alerts %}
+                <li class="alert-item">
+                    <p class="alert-message">{{ item.message }}</p>
+                    <span class="alert-time">{{ item.time|date:'M d, Y H:i' }}</span>
+                </li>
+            {% empty %}
+                <li class="alert-item">
+                    <p class="alert-message">No new alerts. All monitored cases remain stable.</p>
+                </li>
+            {% endfor %}
+        </ul>
     </section>
+</div>
 
-    <section class="panel" aria-label="Recent alerts and updates">
-      <h2 class="panel-title">Recent Alerts</h2>
-      <ul class="alert-list">
-        {% for item in recent_alerts %}
-          <li class="alert-item">
-            {% if item.case_id %}
-              {% if item.is_new %}
-                <span class="new-ribbon">New</span>
-              {% endif %}
-              <a href="{% url 'snakebite:case_details' pk=item.case_id %}" aria-label="View full case for {{ item.message }}">
-                <p class="alert-message">{{ item.message }}</p>
-                <span class="alert-time">{{ item.time|date:'M d, Y H:i' }}</span>
-              </a>
-            {% else %}
-              <p class="alert-message">{{ item.message }}</p>
-              <span class="alert-time">{{ item.time|date:'M d, Y H:i' }}</span>
-            {% endif %}
-          </li>
-        {% empty %}
-          <li class="alert-item">
-            <p class="alert-message">No new alerts. All monitored cases remain stable.</p>
-          </li>
-        {% endfor %}
-      </ul>
-    </section>
+<script>
+    const filterButtons = document.querySelectorAll('.filter-pill');
+    const caseCards = document.querySelectorAll('.case-card');
 
-    <a href="{% url 'snakebite:chw_home' %}" class="button">Return to Home</a>
-  </main>
-
-  <nav class="dashboard-bottom-nav" aria-label="Main navigation">
-    <a href="{% url 'snakebite:chw_dashboard' %}" class="nav-item {% if active_tab == 'timeline' %}active{% endif %}">
-      <span class="nav-icon">🕒</span>
-      <span>Timeline</span>
-    </a>
-    <a href="{% url 'snakebite:map' %}" class="nav-item {% if active_tab == 'map' %}active{% endif %}">
-      <span class="nav-icon">📍</span>
-      <span>Map</span>
-    </a>
-    <a href="{% url 'snakebite:report' %}" class="nav-item {% if active_tab == 'report' %}active{% endif %}">
-      <span class="nav-icon">⚑</span>
-      <span>Report</span>
-    </a>
-    <a href="{% url 'snakebite:settings' %}" class="nav-item {% if active_tab == 'settings' %}active{% endif %}">
-      <span class="nav-icon">⚙️</span>
-      <span>Settings</span>
-    </a>
-  </nav>
-
-  <style>
-    .dashboard-bottom-nav {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 50;
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 8px;
-      background: rgba(10, 17, 24, 0.96);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 -12px 28px rgba(0, 0, 0, 0.25);
-      padding: 8px 10px calc(12px + env(safe-area-inset-bottom));
-      backdrop-filter: blur(12px);
+    function applyCaseFilter(selectedFilter) {
+        caseCards.forEach((card) => {
+            const status = (card.dataset.status || '').toLowerCase();
+            const risk = (card.dataset.risk || '').toLowerCase();
+            const matches =
+                selectedFilter === 'all' ||
+                (selectedFilter === 'open' && (status === 'open' || status === 'in_transit')) ||
+                (selectedFilter === 'high' && risk === 'high') ||
+                (selectedFilter === 'resolved' && status === 'resolved');
+            card.classList.toggle('hidden', !matches);
+        });
     }
 
-    .dashboard-bottom-nav .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      text-decoration: none;
-      color: #9aa3af;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 8px 4px 6px;
-      border-radius: 12px;
-      border: 1px solid transparent;
-      transition: all 0.15s ease;
-    }
+    filterButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            filterButtons.forEach((item) => item.classList.toggle('active', item === button));
+            applyCaseFilter(button.dataset.filter || 'all');
+        });
+    });
+</script>
 
-    .dashboard-bottom-nav .nav-item.active {
-      color: #f5b642;
-      background: rgba(245, 182, 66, 0.08);
-      border-color: rgba(245, 182, 66, 0.4);
-    }
-
-    .dashboard-bottom-nav .nav-icon {
-      font-size: 18px;
-      line-height: 1;
-    }
-  </style>
-</body>
-</html>
+{% include 'snakebite/partials/bottom_nav.html' with nav_role='healthcare' latest_case=latest_case %}
+{% endblock %}

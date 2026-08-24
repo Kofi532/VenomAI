@@ -1,188 +1,580 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VenomGuard AI | Case Details</title>
-  <style>
-    :root {
-      --brand-green: #0F5A37;
-      --brand-green-deep: #0A3E2B;
-      --brand-green-soft: #EAF6F0;
-      --bg: #F8F9FA;
-      --card: #F3F4F6;
-      --panel: #FFFFFF;
-      --text: #1E2A2B;
-      --muted: #5F6F6B;
-      --light-line: #DDE3E1;
-      --danger: #D92D20;
-      --danger-soft: #FDECEC;
-      --dark-green: #123D32;
-      --shadow: rgba(15, 90, 55, 0.08);
-    }
+{% extends 'snakebite/base.html' %}
 
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
-    body { min-height: 100vh; display: flex; justify-content: center; }
-    .app-shell { position: relative; width: 100%; max-width: 480px; min-height: 100vh; background: var(--bg); padding: 16px 16px 112px; }
-    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-    .topbar__left, .topbar__right { display: flex; align-items: center; gap: 10px; min-width: 52px; }
-    .topbar__right { justify-content: flex-end; }
-    .icon-btn {
-      width: 36px; height: 36px; border: 1px solid var(--light-line); border-radius: 12px; background: var(--panel);
-      color: var(--text); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; text-decoration: none;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+{% block title %}VenomGuard AI | Case Details{% endblock %}
+
+{% block extra_styles %}
+<style>
+    body {
+        background: #edf5f0;
+        color: #17332d;
     }
-    .screen-title { margin: 0; font-size: 1.08rem; font-weight: 800; color: var(--text); }
-    .case-list-card, .summary-card, .detail-card { background: var(--card); border: 1px solid var(--light-line); border-radius: 18px; padding: 16px; margin-bottom: 16px; box-shadow: 0 8px 18px var(--shadow); }
-    .case-list-card h2 { margin: 0 0 12px; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-    .case-list { display: flex; flex-direction: column; gap: 10px; }
-    .case-list-item {
-      display: block; text-decoration: none; color: inherit; padding: 12px 12px; border-radius: 12px; background: var(--panel); border: 1px solid var(--light-line);
-      transition: border-color 0.15s ease, transform 0.15s ease;
+    .page-shell {
+        max-width: 480px;
+        padding-top: 0;
+        padding-bottom: 120px;
     }
-    .case-list-item.active { border-color: var(--brand-green); background: var(--brand-green-soft); }
-    .case-list-item:active { transform: scale(0.99); }
-    .case-topline { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
-    .case-id { margin: 0; font-size: 0.92rem; font-weight: 800; color: var(--brand-green-deep); }
-    .status-pill {
-      display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 999px; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
-      background: rgba(15, 90, 55, 0.08); color: var(--brand-green-deep);
+    .timeline-page {
+        min-height: 100vh;
+        background: linear-gradient(180deg, #edf6f0, #f3f8f5 100%);
+        color: #17332d;
+        padding: 14px 14px 16px;
     }
-    .case-meta { margin: 6px 0 0; color: var(--muted); font-size: 0.78rem; line-height: 1.45; font-weight: 700; }
-    .meta-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--light-line); }
-    .meta-row:last-child { border-bottom: none; padding-bottom: 0; }
-    .meta-label { margin: 0; color: var(--muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
-    .meta-value { margin: 0; color: var(--text); font-size: 0.96rem; font-weight: 700; text-align: right; line-height: 1.5; }
-    .section-label { margin: 0 0 10px; color: var(--muted); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+    .timeline-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 6px 4px 14px;
+    }
+    .title-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+    .title-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(13,123,90,0.12);
+        border: 1px solid rgba(13,123,90,0.18);
+        color: var(--primary-dark, #0b5f48);
+        font-size: 18px;
+    }
+    .timeline-title {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #17332d;
+    }
+    .live-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 999px;
+        padding: 7px 12px;
+        background: rgba(13, 123, 90, 0.08);
+        border: 1px solid rgba(13, 123, 90, 0.18);
+        color: #0b5f48;
+        font-size: 0.72rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .live-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #0d7b5a;
+        box-shadow: 0 0 0 5px rgba(13,123,90,0.12);
+    }
+    .case-summary {
+        background: linear-gradient(180deg, rgba(13,123,90,0.08), rgba(255,255,255,0.95));
+        border: 1px solid #dfe8e2;
+        border-radius: 18px;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 8px 18px rgba(17, 62, 47, 0.04);
+    }
+    .case-summary__header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    .eyebrow {
+        margin: 0 0 8px;
+        color: #58716a;
+        font-size: 0.68rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+    .case-summary__header h2 {
+        margin: 0;
+        font-size: 1.28rem;
+        line-height: 1.2;
+        color: #17332d;
+    }
     .risk-badge {
-      display: inline-flex; align-items: center; padding: 7px 12px; border-radius: 999px; background: var(--danger-soft); border: 1px solid rgba(217, 45, 32, 0.15);
-      color: var(--danger); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: rgba(255, 85, 71, 0.14);
+        border: 1px solid rgba(255, 85, 71, 0.24);
+        color: #d95555;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
     }
-    .symptom-list { margin: 0; padding-left: 18px; line-height: 1.9; color: var(--text); font-weight: 700; }
-    .symptom-list li + li { margin-top: 2px; }
-    .cta-stack { position: fixed; left: 50%; transform: translateX(-50%); bottom: 76px; width: min(480px, calc(100% - 32px)); display: flex; flex-direction: column; gap: 12px; z-index: 10; }
-    .primary-btn, .secondary-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 52px; border-radius: 14px; text-decoration: none; font-size: 0.98rem; font-weight: 800; letter-spacing: 0.02em; transition: transform 0.15s ease; }
-    .primary-btn:active, .secondary-btn:active { transform: scale(0.99); }
-    .primary-btn { background: var(--brand-green); color: #fff; box-shadow: 0 10px 20px rgba(15, 90, 55, 0.18); }
-    .secondary-btn { background: transparent; color: var(--brand-green-deep); border: 1.5px solid var(--brand-green-deep); }
-    .bottom-nav { position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; width: min(480px, 100%); background: rgba(255,255,255,0.96); border-top: 1px solid var(--light-line); display: grid; grid-template-columns: repeat(4, 1fr); backdrop-filter: blur(8px); z-index: 20; }
-    .nav-item { padding: 12px 8px 14px; text-decoration: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 0.72rem; font-weight: 700; }
-    .nav-item.active { color: var(--brand-green); font-weight: 800; }
-    .nav-item__icon { font-size: 1.2rem; line-height: 1; }
-    @media (max-width: 390px) { .app-shell { padding-left: 12px; padding-right: 12px; } .screen-title { font-size: 1rem; } }
-  </style>
-</head>
-<body>
-  <main class="app-shell">
-    {% include 'snakebite/_profile_nav.html' %}
+    .risk-badge.medium {
+        background: rgba(245,175,61,0.12);
+        border-color: rgba(245,175,61,0.24);
+        color: #cb7f13;
+    }
+    .risk-badge.low {
+        background: rgba(46,204,113,0.12);
+        border-color: rgba(46,204,113,0.3);
+        color: #1d7f4b;
+    }
+    .fact-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 12px;
+    }
+    .fact-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        padding: 11px 12px;
+        border-radius: 12px;
+        background: #f8fbf8;
+        border: 1px solid #dfe8e2;
+    }
+    .fact-item span {
+        color: #58716a;
+        font-size: 0.64rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 800;
+    }
+    .fact-item strong {
+        color: #17332d;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    .detail-card {
+        background: #ffffff;
+        border: 1px solid #dfe8e2;
+        border-radius: 18px;
+        padding: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 8px 18px rgba(17, 62, 47, 0.04);
+    }
+    .detail-card__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        gap: 12px;
+    }
+    .detail-card__header .eyebrow {
+        margin: 0;
+    }
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        background: rgba(13,123,90,0.08);
+        color: #0b5f48;
+        border: 1px solid rgba(13,123,90,0.16);
+    }
+    .meta-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid #edf2ef;
+    }
+    .meta-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    .meta-label {
+        margin: 0;
+        color: #58716a;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+    .meta-value {
+        margin: 0;
+        color: #17332d;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-align: right;
+        line-height: 1.5;
+    }
+    .symptom-list {
+        margin: 0;
+        padding-left: 18px;
+        color: #17332d;
+        line-height: 1.9;
+        font-weight: 700;
+    }
+    .record-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .record-item {
+        display: grid;
+        grid-template-columns: 74px minmax(0, 1fr);
+        gap: 10px;
+        align-items: flex-start;
+        padding: 12px;
+        border-radius: 12px;
+        background: #f8fbf8;
+        border: 1px solid #dfe8e2;
+    }
+    .record-item__time {
+        color: #58716a;
+        font-size: 0.68rem;
+        line-height: 1.5;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .record-item__body {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .record-tag {
+        display: inline-flex;
+        align-self: flex-start;
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        background: rgba(245,175,61,0.12);
+        border: 1px solid rgba(245,175,61,0.2);
+        color: #b46c00;
+    }
+    .record-item__title {
+        margin: 0;
+        color: #17332d;
+        font-size: 0.88rem;
+        font-weight: 800;
+    }
+    .record-item__text {
+        margin: 0;
+        color: #58716a;
+        font-size: 0.77rem;
+        line-height: 1.55;
+    }
+    .cta-stack {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 74px;
+        width: min(480px, calc(100% - 28px));
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        z-index: 10;
+    }
+    .primary-btn,
+    .secondary-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 52px;
+        border-radius: 14px;
+        text-decoration: none;
+        font-size: 0.96rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+    }
+    .primary-btn {
+        background: linear-gradient(135deg, #0d7b5a, #1ea178);
+        color: #fff;
+        box-shadow: 0 12px 24px rgba(13,123,90,0.18);
+    }
+    .secondary-btn {
+        background: rgba(13, 123, 90, 0.06);
+        color: #0b5f48;
+        border: 1px solid rgba(13,123,90,0.16);
+    }
+    @media (max-width: 390px) {
+        .timeline-title { font-size: 0.96rem; }
+    }
+    body {
+        background: var(--bg);
+        color: var(--text);
+    }
+    .page-shell {
+        padding-top: 0;
+    }
+    .timeline-page {
+        background: linear-gradient(180deg, rgba(31, 39, 54, 0.5), var(--bg) 38%);
+        color: var(--text);
+    }
+    .title-icon {
+        background: var(--gold-soft);
+        border-color: rgba(245,184,0,0.3);
+        color: var(--gold);
+    }
+    .timeline-title,
+    .case-summary__header h2,
+    .fact-item strong,
+    .meta-value,
+    .symptom-list,
+    .record-item__title {
+        color: var(--text);
+    }
+    .live-pill {
+        background: rgba(46,204,113,0.1);
+        border-color: rgba(46,204,113,0.28);
+        color: #a7f0c1;
+    }
+    .live-dot { background: var(--green); }
+    .case-summary,
+    .detail-card {
+        background: var(--panel);
+        border-color: var(--line);
+        box-shadow: var(--shadow);
+    }
+    .case-summary__header { margin-bottom: 14px; }
+    .eyebrow,
+    .fact-item span,
+    .meta-label,
+    .record-item__time,
+    .record-item__text {
+        color: var(--muted);
+    }
+    .fact-item,
+    .record-item {
+        background: var(--card);
+        border-color: var(--line);
+    }
+    .meta-row { border-bottom-color: var(--line); }
+    .status-pill {
+        background: rgba(46,204,113,0.1);
+        color: #a7f0c1;
+        border-color: rgba(46,204,113,0.28);
+    }
+    .risk-badge.low {
+        background: rgba(46,204,113,0.12);
+        color: #a7f0c1;
+        border-color: rgba(46,204,113,0.3);
+    }
+    .risk-badge.medium {
+        background: rgba(245,184,0,0.12);
+        color: #ffd867;
+        border-color: rgba(245,184,0,0.3);
+    }
+    .risk-badge {
+        background: rgba(255,59,48,0.12);
+        color: #ff8d87;
+        border-color: rgba(255,59,48,0.3);
+    }
+    .record-tag {
+        background: var(--gold-soft);
+        border-color: rgba(245,184,0,0.3);
+        color: #ffd867;
+    }
+    .primary-btn {
+        background: linear-gradient(135deg, var(--gold), #ffd14d);
+        color: #111827;
+        box-shadow: 0 12px 24px rgba(245,184,0,0.18);
+    }
+    .secondary-btn {
+        background: rgba(255,255,255,0.04);
+        color: var(--text);
+        border-color: var(--line);
+    }
+    .case-photo {
+        display: block;
+        width: 100%;
+        max-height: 240px;
+        object-fit: cover;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: var(--card);
+    }
+    .case-photo-placeholder {
+        display: grid;
+        place-items: center;
+        min-height: 150px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: linear-gradient(135deg, rgba(245,184,0,0.12), rgba(148,163,184,0.08));
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
 
-    <header class="topbar" aria-label="Case details header">
-      <div class="topbar__left">
-        <a class="icon-btn" href="{% url 'snakebite:chw_home' %}" aria-label="Back to active cases">←</a>
-      </div>
-      <h1 class="screen-title">Case Details</h1>
-      <div class="topbar__right">
-        <a class="icon-btn" href="#" aria-label="Save case">🔖</a>
-        <a class="icon-btn" href="#" aria-label="Settings">⚙</a>
-      </div>
+{% block content %}
+<div class="page-shell timeline-page">
+    <header class="timeline-topbar" aria-label="Case details header">
+        <div class="title-group">
+            <span class="title-icon">🩺</span>
+            <h1 class="timeline-title">Case Details</h1>
+        </div>
+        <span class="live-pill"><span class="live-dot"></span>Active case</span>
     </header>
 
-    <section class="case-list-card" aria-label="Active cases list">
-      <h2>Active Cases</h2>
-      <div class="case-list">
-        {% for active_case in active_cases %}
-          <a class="case-list-item {% if active_case.pk == case.pk %}active{% endif %}" href="{% url 'snakebite:case_details' pk=active_case.pk %}">
-            <div class="case-topline">
-              <p class="case-id">{{ active_case.case_id }}</p>
-              <span class="status-pill">{{ active_case.get_status_display }}</span>
+    <section class="case-summary" aria-label="Case overview">
+        <div class="case-summary__header">
+            <div>
+                <p class="eyebrow">Record overview</p>
+                <h2>{{ case.case_id }}</h2>
             </div>
-            <p class="case-meta">{{ active_case.patient_name }} • {{ active_case.location }}</p>
-          </a>
-        {% empty %}
-          <p class="case-meta">No active cases available.</p>
-        {% endfor %}
-      </div>
-    </section>
+            <span class="risk-badge {% if case_risk_label == 'High Risk' %}high{% elif case_risk_label == 'Medium Risk' %}medium{% else %}low{% endif %}">{{ case_risk_label }}</span>
+        </div>
 
-    <section class="summary-card" aria-label="Case summary metadata">
-      <div class="meta-row">
-        <p class="meta-label">Case ID</p>
-        <p class="meta-value">{{ case.case_id }}</p>
-      </div>
-      <div class="meta-row">
-        <p class="meta-label">Date</p>
-        <p class="meta-value">{{ case.created_at|date:"d M Y, H:i" }}</p>
-      </div>
-      <div class="meta-row">
-        <p class="meta-label">Patient</p>
-        <p class="meta-value">{{ case.patient_name }}</p>
-      </div>
-      <div class="meta-row">
-        <p class="meta-label">Age / Sex</p>
-        <p class="meta-value">Age: {{ case.patient_age }} | {{ case.get_gender_display }}</p>
-      </div>
-      <div class="meta-row">
-        <p class="meta-label">Location</p>
-        <p class="meta-value">{{ case.location }}</p>
-      </div>
+        <div class="fact-grid">
+            <div class="fact-item">
+                <span>Patient</span>
+                <strong>{{ case.patient_name }}</strong>
+            </div>
+            <div class="fact-item">
+                <span>Age / Sex</span>
+                <strong>{{ case.patient_age }} • {{ case.get_gender_display }}</strong>
+            </div>
+            <div class="fact-item">
+                <span>Location</span>
+                <strong>{{ case.location }}</strong>
+            </div>
+            <div class="fact-item">
+                <span>Created</span>
+                <strong>{{ case.created_at|date:"d M Y, H:i" }}</strong>
+            </div>
+        </div>
     </section>
 
     {% if case.photo %}
-      <section class="detail-card" aria-label="Case photo">
-        <p class="section-label">Patient Photo</p>
-        <img src="{{ case.photo.url }}" alt="Patient case photo for {{ case.patient_name }}" style="width:100%; max-height:240px; object-fit:cover; border-radius:14px; border:1px solid var(--light-line); background:#f3f4f6;" />
-      </section>
+    <section class="detail-card" aria-label="Case photo">
+        <div class="detail-card__header">
+            <p class="eyebrow">Patient photo</p>
+        </div>
+        <img class="case-photo" src="{{ case.photo.url }}" alt="Patient case photo for {{ case.patient_name }}" onerror="this.outerHTML='<div class=\'case-photo-placeholder\'>No image available</div>'" />
+    </section>
     {% endif %}
 
-    <section class="detail-card" aria-label="Clinical assessment">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; gap:12px;">
-        <p class="section-label" style="margin:0;">Assessment</p>
-        <span class="risk-badge">{{ case.get_risk_level_display }}</span>
-      </div>
+    <section class="detail-card" aria-label="Clinical assessment record">
+        <div class="detail-card__header">
+            <p class="eyebrow">Clinical record</p>
+            <span class="status-pill">{{ case.get_status_display }}</span>
+        </div>
+        <div class="meta-list">
+            <div class="meta-row">
+                <p class="meta-label">Risk level</p>
+                <p class="meta-value"><span class="risk-badge {% if case_risk_label == 'High Risk' %}high{% elif case_risk_label == 'Medium Risk' %}medium{% else %}low{% endif %}">{{ case_risk_label }}</span></p>
+            </div>
+            <div class="meta-row">
+                <p class="meta-label">Suspected snake</p>
+                <p class="meta-value">{{ case.suspected_snake_type|default:'Viper (Likely)' }}</p>
+            </div>
+            <div class="meta-row">
+                <p class="meta-label">Assessment date</p>
+                <p class="meta-value">{% if assessment %}{{ assessment.timestamp|date:'d M Y, H:i' }}{% else %}{{ case.created_at|date:'d M Y, H:i' }}{% endif %}</p>
+            </div>
+        </div>
+        <div style="margin-top: 16px;">
+            <p class="eyebrow" style="margin-bottom: 10px;">Symptoms</p>
+            <ul class="symptom-list">
+                {% for symptom in symptoms %}
+                    <li>{{ symptom }}</li>
+                {% empty %}
+                    <li>Severe pain</li>
+                    <li>Swelling</li>
+                    <li>Bleeding</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
 
-      <div class="meta-row" style="padding-top:0;">
-        <p class="meta-label">Suspected Snake Type</p>
-        <p class="meta-value">{{ case.suspected_snake_type|default:'Viper (Likely)' }}</p>
-      </div>
+    <section class="detail-card" aria-label="Clinical details">
+        <div class="detail-card__header">
+            <p class="eyebrow">Clinical details</p>
+        </div>
+        <div class="meta-list">
+            <div class="meta-row">
+                <p class="meta-label">Patient</p>
+                <p class="meta-value">{{ case.patient_name }}</p>
+            </div>
+            <div class="meta-row">
+                <p class="meta-label">Age</p>
+                <p class="meta-value">{{ case.patient_age }}</p>
+            </div>
+            <div class="meta-row">
+                <p class="meta-label">Location</p>
+                <p class="meta-value">{{ case.location }}</p>
+            </div>
+            {% if case.clinical_notes %}
+            <div class="meta-row">
+                <p class="meta-label">Notes</p>
+                <p class="meta-value">{{ case.clinical_notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
 
-      <div style="margin-top: 14px;">
-        <p class="section-label">Symptoms</p>
-        <ul class="symptom-list">
-          {% for symptom in symptoms %}
-            <li>{{ symptom }}</li>
-          {% empty %}
-            <li>Severe pain</li>
-            <li>Swelling</li>
-            <li>Bleeding</li>
-          {% endfor %}
-        </ul>
-      </div>
+    {% if recent_assessments %}
+    <section class="detail-card" aria-label="Recent assessments">
+        <div class="detail-card__header">
+            <p class="eyebrow">Recent assessments</p>
+        </div>
+        <div class="record-list">
+            {% for assessment in recent_assessments %}
+                <div class="record-item">
+                    <div class="record-item__time">{{ assessment.timestamp|date:"d M" }}<br>{{ assessment.timestamp|date:"H:i" }}</div>
+                    <div class="record-item__body">
+                        <span class="record-tag">{{ assessment.risk_level|title }}</span>
+                        <p class="record-item__title">{{ assessment.region.name|default:'Patient assessment' }}</p>
+                        <p class="record-item__text">{% for symptom in assessment.symptoms_present.all|slice:':3' %}{{ symptom.name }}{% if not forloop.last %}, {% endif %}{% empty %}Assessment recorded{% endfor %}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="detail-card" aria-label="Referral record history">
+        <div class="detail-card__header">
+            <p class="eyebrow">Referral history</p>
+        </div>
+        <div class="record-list">
+            {% for referral in case.referrals.all %}
+                <div class="record-item">
+                    <div class="record-item__time">{{ referral.sent_at|date:"d M" }}<br>{{ referral.sent_at|date:"H:i" }}</div>
+                    <div class="record-item__body">
+                        <span class="record-tag">{{ referral.get_status_display }}</span>
+                        <p class="record-item__title">{{ referral.destination_facility.name|default:'Referral sent' }}</p>
+                        <p class="record-item__text">{{ referral.notes|default:'Patient referred for follow-up care.' }}</p>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="record-item">
+                    <div class="record-item__time">--</div>
+                    <div class="record-item__body">
+                        <p class="record-item__title">No referral records yet</p>
+                        <p class="record-item__text">This case has not been referred to a facility.</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     </section>
 
     <div class="cta-stack">
-      <a class="primary-btn" href="{% url 'snakebite:send_referral' pk=case.pk %}">Send Referral</a>
-      <a class="secondary-btn" href="tel:+233200000000">Call Facility</a>
+        <a class="primary-btn" href="{% url 'snakebite:send_referral' pk=case.pk %}">Send Referral</a>
+        <a class="secondary-btn" href="tel:{{ facility_phone }}">Call Facility</a>
     </div>
-  </main>
-
-  <nav class="bottom-nav" aria-label="Bottom navigation">
-    <a class="nav-item" href="{% url 'snakebite:chw_home' %}">
-      <span class="nav-item__icon">⌂</span>
-      <span>Home</span>
-    </a>
-    <a class="nav-item active" href="{% url 'snakebite:case_details' pk=case.pk %}">
-      <span class="nav-item__icon">▣</span>
-      <span>Cases</span>
-    </a>
-    <a class="nav-item" href="{% url 'snakebite:chw_dashboard' %}">
-      <span class="nav-item__icon">⚑</span>
-      <span>Alerts</span>
-    </a>
-    <a class="nav-item" href="{% url 'snakebite:settings' %}">
-      <span class="nav-item__icon">⚙</span>
-      <span>Settings</span>
-    </a>
-  </nav>
-</body>
-</html>
+</div>
+{% endblock %}

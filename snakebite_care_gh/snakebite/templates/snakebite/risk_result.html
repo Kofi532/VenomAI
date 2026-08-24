@@ -1,121 +1,302 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Risk Result | VenomGuard AI</title>
-  <style>
-    :root {
-      --bg: #f5f7f3;
-      --panel: #ffffff;
-      --text: #17332d;
-      --muted: #526d65;
-      --danger: #d12d2d;
-      --danger-soft: #fff0f0;
-      --primary: #0f7a65;
-      --border: #dfe7e1;
-      --shadow: 0 12px 28px rgba(18, 38, 33, 0.06);
-    }
+{% extends 'snakebite/base.html' %}
+{% load static %}
 
-    * { box-sizing: border-box; }
+{% block title %}VenomGuard AI | Risk Result{% endblock %}
+
+{% block extra_styles %}
+<style>
     body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+        background: #07130f;
+        color: #edf7f3;
     }
-
-    .screen {
-      max-width: 480px;
-      margin: 0 auto;
-      min-height: 100vh;
-      background: var(--bg);
-      padding: 22px 16px 90px;
+    .page-shell {
+        max-width: 480px;
+        padding-top: 18px;
+        padding-bottom: 110px;
     }
-
+    .timeline-page {
+        min-height: 100vh;
+        background: radial-gradient(circle at top, rgba(38, 92, 88, 0.28), transparent 28%), #07130f;
+        color: #edf7f3;
+        padding: 14px 14px 24px;
+    }
+    .timeline-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 4px 16px;
+    }
+    .title-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .clock-mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(136, 192, 255, 0.12);
+        border: 1px solid rgba(136, 192, 255, 0.28);
+        color: #9ecbff;
+        font-size: 18px;
+    }
+    .timeline-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin: 0;
+        color: #f5f7fb;
+    }
     .status-badge {
-      background: var(--danger-soft);
-      color: var(--danger);
-      border: 1px solid rgba(209, 45, 45, 0.22);
-      border-radius: 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 18px;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      margin-bottom: 18px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        font-size: 0.74rem;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 20px;
     }
-
-    h2 {
-      margin: 0 0 18px;
-      font-size: 1.8rem;
-      line-height: 1.25;
+    .status-badge.high {
+        background: rgba(255, 85, 71, 0.16);
+        color: #ff9a94;
+        border: 1px solid rgba(255, 85, 71, 0.26);
     }
-
-    .card {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 18px 16px;
-      box-shadow: var(--shadow);
-      margin-bottom: 18px;
+    .status-badge.medium {
+        background: rgba(255, 174, 73, 0.14);
+        color: #ffce7a;
+        border: 1px solid rgba(255, 174, 73, 0.26);
     }
-
+    .status-badge.low {
+        background: rgba(46,204,113,0.1);
+        color: #a7f0c1;
+        border: 1px solid rgba(46,204,113,0.35);
+    }
+    .risk-banner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        margin-bottom: 18px;
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+    }
+    .risk-banner.high {
+        background: rgba(255, 85, 71, 0.12);
+        border-color: rgba(255, 85, 71, 0.35);
+    }
+    .risk-banner.medium {
+        background: rgba(255, 174, 73, 0.12);
+        border-color: rgba(255, 174, 73, 0.32);
+    }
+    .risk-banner.low {
+        background: rgba(46,204,113,0.12);
+        border-color: rgba(46,204,113,0.35);
+    }
+    .risk-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-size: 1.4rem;
+        background: rgba(255,255,255,0.08);
+    }
+    .risk-banner.high .risk-icon { color: #ff9a94; }
+    .risk-banner.medium .risk-icon { color: #ffce7a; }
+    .risk-banner.low .risk-icon { color: #a7f0c1; }
+    .risk-banner-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .risk-banner-title {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #f5f7fb;
+    }
+    .risk-banner-note {
+        margin: 0;
+        font-size: 0.76rem;
+        color: #dfeae6;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+    .checklist {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 12px;
+    }
+    .checklist li {
+        position: relative;
+        padding-left: 28px;
+        color: #edf7f3;
+        line-height: 1.5;
+        font-weight: 600;
+    }
+    .checklist li:before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 18px;
+        height: 18px;
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        background: rgba(46, 204, 113, 0.18);
+        color: #a7f0c1;
+        font-size: 0.7rem;
+        font-weight: 900;
+    }
+    .checklist.danger li:before {
+        content: '×';
+        background: rgba(255, 85, 71, 0.14);
+        color: #ff9a94;
+    }
+    .assessment-card {
+        background: rgba(19, 35, 31, 0.9);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 18px;
+        padding: 18px 16px;
+        box-shadow: 0 15px 25px rgba(0,0,0,0.14);
+        margin-bottom: 18px;
+    }
+    .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+    .metric {
+        padding: 12px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+    .metric-label {
+        margin: 0 0 8px;
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #a8c9be;
+        font-weight: 700;
+    }
+    .metric-value {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #f2fbf5;
+    }
     .card-title {
-      margin: 0 0 12px;
-      font-size: 1.1rem;
-      font-weight: 800;
+        margin: 0 0 12px;
+        font-size: 0.86rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #a8c9be;
+        font-weight: 800;
     }
-
     ol {
-      margin: 0;
-      padding-left: 18px;
-      display: grid;
-      gap: 12px;
-      color: var(--text);
-      line-height: 1.5;
-      font-weight: 600;
+        margin: 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 12px;
+        color: #edf7f3;
+        line-height: 1.5;
+        font-weight: 600;
     }
-
-    .cta-primary {
-      width: 100%;
-      background: var(--danger);
-      color: white;
-      border: none;
-      min-height: 54px;
-      border-radius: 14px;
-      font-size: 1rem;
-      font-weight: 800;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 12px 20px rgba(209, 45, 45, 0.18);
-      margin-bottom: 20px;
+    .footer {
+        display: grid;
+        gap: 12px;
+        margin-top: 8px;
     }
-  </style>
-</head>
-<body>
-  <main class="screen">
-    <div class="status-badge">⚠️ High Risk - Seek care immediately</div>
+</style>
+{% endblock %}
 
-    <h2>What to do now</h2>
+{% block content %}
+<div class="timeline-page">
+    <header class="timeline-topbar" aria-label="Risk result header">
+        <div class="title-group">
+            <span class="clock-mark" aria-hidden="true">⚠</span>
+            <h1 class="timeline-title">Risk Result</h1>
+        </div>
+    </header>
 
-    <section class="card">
-      <p class="card-title">First aid</p>
-      <ol>
-        <li>Keep the person calm and still</li>
-        <li>Remove tight items</li>
-        <li>Do NOT cut or suck the wound</li>
-        <li>Go to a health facility immediately</li>
-      </ol>
+    <div class="risk-banner {{ risk_color }}">
+        <div class="risk-icon" aria-hidden="true">{% if risk_color == 'high' %}⚠{% elif risk_color == 'medium' %}!{% else %}✓{% endif %}</div>
+        <div class="risk-banner-copy">
+            <p class="risk-banner-title">{{ risk_label|default:'High Risk' }}</p>
+            <p class="risk-banner-note">{{ risk_banner_text|default:'High Risk — Seek care immediately' }}</p>
+        </div>
+    </div>
+
+    <div class="assessment-card">
+        <div class="metric-grid">
+            <div class="metric">
+                <p class="metric-label">Location</p>
+                <p class="metric-value">{{ location_label }}</p>
+            </div>
+            <div class="metric">
+                <p class="metric-label">Severity</p>
+                <p class="metric-value">{{ assessment_result.severity_score|default:52 }}/100</p>
+            </div>
+        </div>
+
+        <div class="metric-grid">
+            <div class="metric">
+                <p class="metric-label">Likely snake</p>
+                <p class="metric-value">{{ assessment_result.likely_snakes|join:', '|default:'Viper / Mamba' }}</p>
+            </div>
+            <div class="metric">
+                <p class="metric-label">Prediction</p>
+                <p class="metric-value">{{ assessment_result.predicted_envenomation|default:'Uncertain' }}</p>
+            </div>
+        </div>
+    </div>
+
+    <section class="assessment-card">
+        <p class="card-title">What to do now</p>
+        <ul class="checklist">
+            {% for item in first_aid_do|default:assessment_result.recommended_actions %}
+                <li>{{ item }}</li>
+            {% empty %}
+                <li>Keep the patient calm and still.</li>
+                <li>Immobilize the limb with a splint.</li>
+                <li>Do not cut or suck the wound.</li>
+            {% endfor %}
+        </ul>
     </section>
 
-    <a href="{% url 'snakebite:community_nearest_help' %}" class="cta-primary">Find Nearest Help</a>
+    <section class="assessment-card">
+        <p class="card-title">Avoid</p>
+        <ul class="checklist danger">
+            {% for item in first_aid_dont|default:assessment_result.recommended_actions %}
+                <li>{{ item }}</li>
+            {% empty %}
+                <li>Do not cut or suck the wound.</li>
+                <li>Do not apply a tight tourniquet.</li>
+                <li>Do not delay referral to a clinic or hospital.</li>
+            {% endfor %}
+        </ul>
+    </section>
 
-    {% include 'snakebite/_community_bottom_nav.html' %}
-  </main>
-</body>
-</html>
+    <div class="footer">
+        <a href="{% url 'snakebite:community_bite_assessment' %}?step=4" class="primary-btn">
+            <span>Find Nearest Help</span>
+            <span class="sr-only">Find nearest help</span>
+        </a>
+        <a href="tel:112" class="secondary-btn">Call for Transport Help</a>
+    </div>
+</div>
+{% endblock %}
