@@ -970,11 +970,13 @@ class CHWHomeView(View):
 			recent_alerts.append({
 				'time': case.created_at,
 				'message': f"High risk case reported: {case.case_id}",
+				'case_url': reverse('snakebite:case_details', kwargs={'pk': case.pk}),
 			})
 		for referral in Referral.objects.order_by('-sent_at')[:2]:
 			recent_alerts.append({
 				'time': referral.sent_at,
 				'message': f"Transport requested for {referral.case.case_id}",
+				'case_url': reverse('snakebite:case_details', kwargs={'pk': referral.case.pk}),
 			})
 		recent_alerts = sorted(recent_alerts, key=lambda item: item['time'], reverse=True)[:5]
 		return render(
@@ -1199,11 +1201,13 @@ class CHWDashboardView(View):
 			recent_alerts.append({
 				'time': case.created_at,
 				'message': f"{risk_text} case reported: {case.case_id}",
+				'case_url': reverse('snakebite:case_details', kwargs={'pk': case.pk}),
 			})
 		for referral in Referral.objects.order_by('-sent_at')[:3]:
 			recent_alerts.append({
 				'time': referral.sent_at,
 				'message': f"Transport requested for {referral.case.case_id}",
+				'case_url': reverse('snakebite:case_details', kwargs={'pk': referral.case.pk}),
 			})
 		recent_alerts = sorted(recent_alerts, key=lambda item: item['time'], reverse=True)[:5]
 

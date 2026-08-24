@@ -65,6 +65,8 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertContains(response, 'High risk case reported')
         self.assertContains(response, 'Transport requested')
 
+        self.assertContains(response, reverse('snakebite:case_details', kwargs={'pk': case.pk}))
+
     def test_chw_dashboard_reads_live_case_records_and_filter_controls(self):
         PatientCase.objects.create(
             patient_name='Clara Addo',

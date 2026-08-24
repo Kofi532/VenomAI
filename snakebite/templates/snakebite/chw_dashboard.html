@@ -320,6 +320,17 @@
         border-radius: 14px;
         padding: 12px;
     }
+    .alert-link {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+        border-radius: 10px;
+    }
+    .alert-link:hover,
+    .alert-link:focus-visible {
+        outline: 2px solid #f7ca4d;
+        outline-offset: 4px;
+    }
     .alert-message {
         margin: 0;
         line-height: 1.5;
@@ -423,8 +434,10 @@
         <ul class="alert-list">
             {% for item in recent_alerts %}
                 <li class="alert-item">
-                    <p class="alert-message">{{ item.message }}</p>
-                    <span class="alert-time">{{ item.time|date:'M d, Y H:i' }}</span>
+                    <a class="alert-link" href="{{ item.case_url }}">
+                        <p class="alert-message">{{ item.message }}</p>
+                        <span class="alert-time">{{ item.time|date:'M d, Y H:i' }}</span>
+                    </a>
                 </li>
             {% empty %}
                 <li class="alert-item">
