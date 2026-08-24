@@ -3,6 +3,7 @@ from decimal import Decimal
 from hmac import compare_digest
 from urllib.parse import urlencode
 
+from django.contrib import messages
 from django.db import transaction
 from django.db.models import Count, Q
 from django.http import JsonResponse
@@ -805,8 +806,14 @@ def report_sighting_view(request):
 		heading = (request.POST.get('headline') or '').strip()
 		description = (request.POST.get('description') or '').strip()
 		photo = request.FILES.get('photo')
-		species_id = request.POST.get('suspected_species')
-		species_obj = Snake.objects.filter(pk=species_id).first() if species_id else None
+		species_value = (request.POST.get('suspected_species') or '').strip()
+		species_obj = None
+		if species_value:
+			if species_value.isdigit():
+				species_obj = Snake.objects.filter(pk=species_value).first()
+			if species_obj is None:
+				species_obj = Snake.objects.filter(common_name__iexact=species_value).first()
+		species_name = species_obj.common_name if species_obj else species_value
 		was_bitten = request.POST.get('was_bitten') == 'yes'
 		contact_number = (request.POST.get('contact_number') or '').strip()
 		time_seen = request.POST.get('time_seen') or SnakeSighting.TimeSeenChoices.JUST_NOW
@@ -827,7 +834,7 @@ def report_sighting_view(request):
 			'headline': heading,
 			'description': description,
 			'contact_number': contact_number,
-			'suspected_species': species_id or '',
+			'suspected_species': species_name,
 			'was_bitten': 'yes' if was_bitten else 'no',
 			'time_seen': time_seen,
 		})
@@ -850,6 +857,7 @@ def report_sighting_view(request):
 				contact_number=contact_number,
 				time_seen=time_seen,
 				suspected_species=species_obj,
+				suspected_species_name=species_name,
 				member_type=member_type,
 				latitude=parsed_latitude,
 				longitude=parsed_longitude,
@@ -860,7 +868,7 @@ def report_sighting_view(request):
 				gender=PatientCase.Gender.FEMALE if not was_bitten else PatientCase.Gender.OTHER,
 				location=country_label,
 				symptoms=description,
-				suspected_snake_type=species_obj.common_name if species_obj else 'Unspecified',
+				suspected_snake_type=species_name or 'Unspecified',
 				risk_level=PatientCase.RiskLevel.HIGH if was_bitten else PatientCase.RiskLevel.MEDIUM,
 				status=PatientCase.Status.OPEN,
 				clinical_notes=(
@@ -872,7 +880,10 @@ def report_sighting_view(request):
 				photo=photo,
 				member_type=member_type,
 			)
+			messages.success(request, f'Report submitted successfully. Case {case.case_id} is now open for review.')
 			return redirect('snakebite:case_details', pk=case.pk)
+		if form_errors:
+			messages.error(request, 'Report could not be submitted. Please review the highlighted fields.')
 
 	selected_country = request.session.get(SNAKEBITE_NATIONALITY_SESSION_KEY, 'ghana').lower()
 	country_labels = dict(SNAKEBITE_NATIONALITY_OPTIONS)

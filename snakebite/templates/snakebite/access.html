@@ -3,263 +3,280 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snakebite Access</title>
+  <title>VenomGuard AI Access</title>
   <style>
     :root {
-      --bg: #f6f8f4;
-      --panel: #ffffff;
-      --text: #18312b;
-      --muted: #557267;
-      --accent: #0d7c66;
-      --accent-dark: #0a6452;
-      --danger: #b42318;
-      --border: #d6e2dc;
+      --bg: #12151e;
+      --panel: #1b202e;
+      --card: #1d2533;
+      --line: rgba(255,255,255,0.08);
+      --text: #f5f7fa;
+      --muted: #a7b0c0;
+      --gold: #f5b800;
+      --gold-soft: rgba(245,184,0,0.16);
+      --red: #ff3b30;
+      --shadow: 0 22px 50px rgba(0,0,0,0.32);
     }
-
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
     body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: radial-gradient(circle at 20% 20%, #e5f4ee 0%, var(--bg) 55%);
-      color: var(--text);
       display: grid;
       place-items: center;
-      padding: 24px;
+      margin: 0;
+      padding: 24px 16px;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(245,184,0,0.1), transparent 32%),
+        linear-gradient(180deg, #171d2a, var(--bg) 58%, #0d1119);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-
-    .card {
-      width: min(460px, 100%);
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      box-shadow: 0 18px 40px rgba(16, 47, 41, 0.12);
-      padding: 28px;
+    .access-shell { width: min(480px, 100%); }
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 4px 18px;
     }
-
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--gold), #ffd14d);
+      color: #111827;
+      font-size: 18px;
+      font-weight: 900;
+    }
+    .brand-name {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+    .access-card {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(27,32,46,0.94);
+      box-shadow: var(--shadow);
+    }
+    .step-label {
+      margin: 0 0 8px;
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
     h1 {
       margin: 0 0 8px;
-      font-size: 1.6rem;
-      line-height: 1.2;
+      font-size: 25px;
+      line-height: 1.15;
     }
-
-    p {
-      margin: 0 0 18px;
+    .intro {
+      margin: 0 0 20px;
       color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
     }
-
+    .progress {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .progress-segment {
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.1);
+    }
+    .progress-segment.active { background: var(--gold); }
     .error {
-      margin: 0 0 14px;
-      padding: 10px 12px;
-      border: 1px solid #f4c7c3;
-      background: #fff5f4;
-      color: var(--danger);
-      border-radius: 10px;
-      font-size: 0.95rem;
+      margin: 0 0 16px;
+      padding: 11px 12px;
+      border: 1px solid rgba(255,59,48,0.35);
+      border-radius: 12px;
+      background: rgba(255,59,48,0.1);
+      color: #ffb1ac;
+      font-size: 13px;
+      line-height: 1.45;
     }
-
-    label {
+    .field-group { margin: 0 0 16px; }
+    label, legend {
       display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-
-    .password-wrap {
-      position: relative;
-      margin-bottom: 10px;
-    }
-
-    input[type="password"],
-    input[type="text"] {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 1rem;
-      color: var(--text);
-      background: #fff;
-      outline: none;
-    }
-
-    input[type="password"]:focus,
-    input[type="text"]:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(13, 124, 102, 0.15);
-    }
-
-    .toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin: 4px 0 18px;
-      font-size: 0.95rem;
+      margin-bottom: 7px;
       color: var(--muted);
-      user-select: none;
-      cursor: pointer;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
-
-    .actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .field-group {
-      margin: 14px 0;
-    }
-
+    input[type="password"],
+    input[type="text"],
     select {
       width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 1rem;
-      color: var(--text);
-      background: #fff;
+      margin: 0;
+      padding: 12px 13px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
       outline: none;
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      font: inherit;
+      font-size: 15px;
     }
-
-    select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(13, 124, 102, 0.15);
+    input:focus, select:focus {
+      border-color: rgba(245,184,0,0.7);
+      box-shadow: 0 0 0 3px rgba(245,184,0,0.12);
     }
-
-    .member-options {
-      display: grid;
+    .toggle {
+      display: flex;
+      align-items: center;
       gap: 8px;
-      margin-top: 4px;
+      margin: -2px 0 20px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0;
+      text-transform: none;
     }
-
+    .toggle input { accent-color: var(--gold); }
+    .member-options { display: grid; gap: 8px; }
     .member-option {
       display: flex;
       align-items: center;
       gap: 10px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 12px;
-      background: #fff;
-      font-weight: 600;
+      margin: 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
       color: var(--text);
       cursor: pointer;
+      font-size: 14px;
+      letter-spacing: 0;
+      text-transform: none;
     }
-
-    .member-option input {
-      margin: 0;
+    .member-option:has(input:checked) {
+      border-color: rgba(245,184,0,0.55);
+      background: var(--gold-soft);
+      color: #ffd867;
     }
-
+    .member-option input { accent-color: var(--gold); }
+    .actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
     button {
-      border: 0;
-      border-radius: 10px;
-      background: var(--accent);
-      color: #fff;
+      min-height: 46px;
       padding: 11px 16px;
-      font-weight: 600;
-      font-size: 0.96rem;
+      border: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--gold), #ffd14d);
+      color: #111827;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 800;
       cursor: pointer;
-      transition: background 0.2s ease;
     }
-
-    button:hover {
-      background: var(--accent-dark);
-    }
-
+    button:hover { filter: brightness(1.06); }
     .back {
+      padding: 10px 4px;
       color: var(--muted);
-      text-decoration: none;
-      font-size: 0.95rem;
+      font-size: 12px;
+      text-align: right;
     }
-
-    .back:hover {
-      text-decoration: underline;
+    @media (max-width: 380px) {
+      .access-card { padding: 18px; }
+      .actions { grid-template-columns: 1fr; }
+      .back { text-align: center; }
     }
   </style>
 </head>
 <body>
-  <main class="card" aria-label="Snakebite access form">
-    <h1>VenomGuard AI Access</h1>
-    <p>
-      {% if show_profile_form %}
-        Password confirmed. Choose your profile details to continue.
-      {% else %}
-        Enter the password to continue to the VenomGuard AI application.
+  <main class="access-shell">
+    <div class="brand-row" aria-label="VenomGuard AI">
+      <div class="brand-mark" aria-hidden="true">V</div>
+      <p class="brand-name">VenomGuard AI</p>
+    </div>
+
+    <section class="access-card" aria-label="VenomGuard access form">
+      <p class="step-label">{% if show_profile_form %}Step 2 of 2{% else %}Step 1 of 2{% endif %}</p>
+      <h1>{% if show_profile_form %}Set your profile{% else %}Welcome back{% endif %}</h1>
+      <p class="intro">
+        {% if show_profile_form %}
+          Password confirmed. Choose your country and role to continue.
+        {% else %}
+          Enter your access password to continue to the VenomGuard AI application.
+        {% endif %}
+      </p>
+      <div class="progress" aria-label="Access progress">
+        <span class="progress-segment active"></span>
+        <span class="progress-segment {% if show_profile_form %}active{% endif %}"></span>
+      </div>
+
+      {% if error_message %}
+        <div class="error" role="alert">{{ error_message }}</div>
       {% endif %}
-    </p>
 
-    {% if error_message %}
-      <div class="error" role="alert">{{ error_message }}</div>
-    {% endif %}
-
-    {% if show_profile_form %}
-      <form method="post" novalidate>
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ next_url }}">
-        <input type="hidden" name="action" value="profile">
-
-        <div class="field-group">
-          <label for="nationality">Nationality</label>
-          <select id="nationality" name="nationality" required>
-            <option value="">Select your nationality</option>
-            {% for code, label in nationality_options %}
-              <option value="{{ code }}" {% if selected_nationality == code %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <div class="field-group">
-          <label>Member type</label>
-          <div class="member-options" role="radiogroup" aria-label="Member type">
-            {% for code, label in member_type_options %}
-              <label class="member-option" for="member-{{ code }}">
-                <input
-                  id="member-{{ code }}"
-                  type="radio"
-                  name="member_type"
-                  value="{{ code }}"
-                  {% if selected_member_type == code %}checked{% endif %}
-                  required
-                >
-                <span>{{ label }}</span>
-              </label>
-            {% endfor %}
+      {% if show_profile_form %}
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ next_url }}">
+          <input type="hidden" name="action" value="profile">
+          <div class="field-group">
+            <label for="nationality">Country</label>
+            <select id="nationality" name="nationality" required>
+              <option value="">Select your country</option>
+              {% for code, label in nationality_options %}
+                <option value="{{ code }}" {% if selected_nationality == code %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
           </div>
-        </div>
-
-        <div class="actions">
-          <button type="submit">Continue to VenomGuard</button>
-          <a class="back" href="/">Back to project selector</a>
-        </div>
-      </form>
-    {% else %}
-      <form method="post" novalidate>
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ next_url }}">
-        <input type="hidden" name="action" value="password">
-
-        <label for="password">Password</label>
-        <div class="password-wrap">
-          <input id="password" name="password" type="password" autocomplete="current-password" required>
-        </div>
-
-        <label class="toggle" for="show-password">
-          <input id="show-password" type="checkbox">
-          Show password
-        </label>
-
-        <div class="actions">
-          <button type="submit">Continue</button>
-          <a class="back" href="/">Back to project selector</a>
-        </div>
-      </form>
-    {% endif %}
+          <div class="field-group">
+            <label>Member type</label>
+            <div class="member-options" role="radiogroup" aria-label="Member type">
+              {% for code, label in member_type_options %}
+                <label class="member-option" for="member-{{ code }}">
+                  <input id="member-{{ code }}" type="radio" name="member_type" value="{{ code }}" {% if selected_member_type == code %}checked{% endif %} required>
+                  <span>{{ label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="actions">
+            <button type="submit">Continue to app</button>
+            <a class="back" href="/">Back to project selector</a>
+          </div>
+        </form>
+      {% else %}
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ next_url }}">
+          <input type="hidden" name="action" value="password">
+          <div class="field-group">
+            <label for="password">Access password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+          </div>
+          <label class="toggle" for="show-password">
+            <input id="show-password" type="checkbox">
+            <span>Show password</span>
+          </label>
+          <div class="actions">
+            <button type="submit">Continue</button>
+            <a class="back" href="/">Back to project selector</a>
+          </div>
+        </form>
+      {% endif %}
+    </section>
   </main>
-
   <script>
     const passwordInput = document.getElementById('password');
     const toggle = document.getElementById('show-password');
-
     if (passwordInput && toggle) {
       toggle.addEventListener('change', function () {
         passwordInput.type = this.checked ? 'text' : 'password';

@@ -74,6 +74,46 @@
             border: 1px solid var(--line);
             color: var(--muted);
         }
+        .app-messages {
+            width: min(480px, 100%);
+            margin: 12px auto 0;
+            padding: 0 16px;
+        }
+        .app-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: var(--panel);
+            color: var(--text);
+            box-shadow: var(--shadow);
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.45;
+        }
+        .app-message--success {
+            border-color: rgba(46,204,113,0.35);
+            background: rgba(46,204,113,0.1);
+            color: #a7f0c1;
+        }
+        .app-message--error {
+            border-color: rgba(255,59,48,0.35);
+            background: rgba(255,59,48,0.1);
+            color: #ffb1ac;
+        }
+        .app-message__icon {
+            display: grid;
+            place-items: center;
+            width: 20px;
+            height: 20px;
+            flex: 0 0 20px;
+            border: 1px solid currentColor;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 900;
+        }
         .section {
             background: var(--panel);
             border: 1px solid var(--line);
@@ -285,6 +325,17 @@
             <span class="pill">{% if venomguard_member_type_label %}{{ venomguard_member_type_label }}{% else %}Member{% endif %}</span>
         </div>
     </header>
+
+    {% if messages %}
+        <div class="app-messages" aria-live="polite">
+            {% for message in messages %}
+                <div class="app-message app-message--{{ message.tags|default:'info' }}" role="status">
+                    <span class="app-message__icon" aria-hidden="true">{% if 'success' in message.tags %}✓{% elif 'error' in message.tags %}!{% else %}i{% endif %}</span>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <div class="page-shell">
         {% block content %}{% endblock %}

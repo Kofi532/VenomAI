@@ -317,6 +317,7 @@ class SnakeSighting(models.Model):
 	description = models.TextField(max_length=200)
 	was_bitten = models.BooleanField(default=False)
 	member_type = models.CharField(max_length=30, default="community")
+	suspected_species_name = models.CharField(max_length=150, blank=True)
 	contact_number = models.CharField(max_length=20, blank=True, null=True)
 	time_seen = models.CharField(max_length=50, choices=TimeSeenChoices.choices, default=TimeSeenChoices.JUST_NOW)
 	latitude = models.FloatField(blank=True, null=True)

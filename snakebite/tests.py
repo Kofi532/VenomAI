@@ -616,6 +616,37 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertTrue(response.url.startswith('/venomguard/case-details/'))
         self.assertTrue(self.client.get(response.url).status_code == 200)
 
+    def test_report_sighting_accepts_typed_species_name(self):
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_nationality'] = 'ghana'
+        session['snakebite_member_type'] = 'community'
+        session.save()
+
+        photo = SimpleUploadedFile(
+            'typed-species.jpg',
+            b'fake-image-data',
+            content_type='image/jpeg',
+        )
+        response = self.client.post(
+            reverse('snakebite:report_sighting'),
+            {
+                'headline': 'Snake seen near the market',
+                'description': 'A snake was seen near the market entrance',
+                'suspected_species': 'Green bush viper',
+                'was_bitten': 'no',
+                'time_seen': 'just_now',
+                'photo': photo,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        sighting = SnakeSighting.objects.order_by('-pk').first()
+        case = PatientCase.objects.order_by('-pk').first()
+        self.assertEqual(sighting.suspected_species_name, 'Green bush viper')
+        self.assertIsNone(sighting.suspected_species)
+        self.assertEqual(case.suspected_snake_type, 'Green bush viper')
+
     def test_report_sighting_keeps_existing_form_values_on_validation_error(self):
         session = self.client.session
         session['snakebite_access_granted'] = True

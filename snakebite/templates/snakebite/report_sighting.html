@@ -234,12 +234,17 @@
 
             <div class="card" style="margin-bottom: 14px;">
                 <label class="muted" for="suspected_species">Suspected species</label>
-                <select id="suspected_species" name="suspected_species" class="field">
-                    <option value="">Select a species</option>
+                <input id="suspected_species" name="suspected_species" type="text" class="field" list="species-options" autocomplete="off" placeholder="Type or select a species" value="{{ form_values.suspected_species|default:'' }}">
+                <datalist id="species-options">
+                    <option value="Black mamba"></option>
+                    <option value="Puff adder"></option>
+                    <option value="West African gaboon viper"></option>
+                    <option value="Mozambique spitting cobra"></option>
                     {% for species in species %}
-                        <option value="{{ species.id }}" {% if form_values.suspected_species|default:'' == species.id|stringformat:'s' %}selected{% endif %}>{{ species.common_name }}</option>
+                        <option value="{{ species.common_name }}"></option>
                     {% endfor %}
-                </select>
+                </datalist>
+                <p class="muted" style="margin: 8px 0 0; font-size: 12px;">Choose a suggestion or type another name if you are unsure.</p>
             </div>
 
             <div class="card" style="margin-bottom: 14px;">
