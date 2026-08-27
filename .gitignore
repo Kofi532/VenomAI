@@ -11,8 +11,10 @@ env/
 # Django
 *.log
 db.sqlite3
+db.sqlite3.*
 media/
 staticfiles/
+snakes_pics/
 
 # Environment files
 .env
@@ -22,6 +24,10 @@ staticfiles/
 .vscode/
 .idea/
 .DS_Store
+
+# Notebooks and local duplicate files
+*.ipynb
+snakebite_care_gh/snakebite/
 
 # Test and coverage
 .pytest_cache/
