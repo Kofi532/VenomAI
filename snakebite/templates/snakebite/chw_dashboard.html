@@ -368,6 +368,16 @@
         <span class="live-pill"><span class="live-dot"></span>Live</span>
     </header>
 
+    <section class="greeting" aria-label="Welcome message">
+        <div>
+            <h2 class="greeting-title">Welcome, {{ user_name }}</h2>
+            <div class="role-line">
+                <span class="role-badge">{{ role_label }}</span>
+                <span class="role-name">Role: {{ occupation }}</span>
+            </div>
+        </div>
+    </section>
+
     <a class="primary-btn" href="{% url 'snakebite:report_sighting' %}">New Snakebite Case</a>
 
     <section class="stats-grid" aria-label="Case summary metrics">

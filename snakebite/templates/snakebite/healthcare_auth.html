@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Healthcare access | VenomGuard AI</title>
+  <style>
+    :root { --ink: #173d2b; --muted: #6b7e72; --line: #d8e6d9; --paper: #fff; --wash: #f2f7f2; --gold: #f5b800; }
+    * { box-sizing: border-box; }
+    body { display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 24px 16px; color: var(--ink); background: linear-gradient(145deg, #e5efe7, var(--wash) 55%, #fff); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .auth-shell { width: min(430px, 100%); }
+    .brand { display: flex; align-items: center; gap: 10px; margin: 0 4px 18px; font-weight: 850; }
+    .brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: var(--ink); color: var(--gold); font-size: 20px; }
+    .auth-card { padding: 24px; border: 1px solid var(--line); border-radius: 20px; background: rgba(255,255,255,.94); box-shadow: 0 18px 45px rgba(23,61,43,.12); }
+    .eyebrow { margin: 0 0 8px; color: #47725a; font-size: .7rem; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 0 0 8px; font-size: 1.75rem; line-height: 1.12; }
+    .intro { margin: 0 0 20px; color: var(--muted); font-size: .88rem; line-height: 1.5; }
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 20px; padding: 4px; border-radius: 12px; background: #edf4ee; }
+    .tabs a { padding: 9px; border-radius: 9px; color: var(--muted); font-size: .8rem; font-weight: 800; text-align: center; text-decoration: none; }
+    .tabs a.active { background: var(--paper); color: var(--ink); box-shadow: 0 2px 8px rgba(23,61,43,.08); }
+    .error { margin: 0 0 16px; padding: 11px 12px; border: 1px solid #e3aaa4; border-radius: 10px; background: #fff2f0; color: #9f3026; font-size: .8rem; }
+    .field { margin-bottom: 15px; }
+    .password-toggle { display: flex; align-items: center; gap: 8px; margin: -3px 0 15px; color: var(--muted); font-size: .78rem; cursor: pointer; }
+    .password-toggle input { width: auto; accent-color: var(--ink); }
+    label { display: block; margin-bottom: 7px; color: var(--muted); font-size: .7rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+    input { width: 100%; padding: 12px 13px; border: 1px solid var(--line); border-radius: 11px; color: var(--ink); background: #fbfdfb; font: inherit; font-size: .92rem; }
+    input:focus { outline: 0; border-color: #6d9b7b; box-shadow: 0 0 0 3px rgba(109,155,123,.16); }
+    button { width: 100%; min-height: 46px; margin-top: 5px; border: 0; border-radius: 11px; background: var(--ink); color: #fff; font: inherit; font-weight: 850; cursor: pointer; }
+    button:hover { background: #24593e; }
+    .back { display: block; margin-top: 17px; color: var(--muted); font-size: .78rem; text-align: center; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <main class="auth-shell">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">V</span><span>VenomGuard AI</span></div>
+    <section class="auth-card" aria-labelledby="auth-title">
+      <p class="eyebrow">Healthcare member access</p>
+      <h1 id="auth-title">{% if auth_mode == 'signup' %}Create your account{% else %}Welcome back{% endif %}</h1>
+      <p class="intro">Sign in or create an account to use the healthcare dashboard.</p>
+      <nav class="tabs" aria-label="Authentication options">
+        <a href="{% url 'snakebite:healthcare_auth' %}?mode=signin" class="{% if auth_mode == 'signin' %}active{% endif %}">Sign in</a>
+        <a href="{% url 'snakebite:healthcare_auth' %}?mode=signup" class="{% if auth_mode == 'signup' %}active{% endif %}">Sign up</a>
+      </nav>
+      {% if error_message %}<p class="error" role="alert">{{ error_message }}</p>{% endif %}
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="mode" value="{{ auth_mode }}">
+        <div class="field"><label for="username">Username</label><input id="username" name="username" type="text" autocomplete="username" required></div>
+        {% if auth_mode == 'signup' %}<div class="field"><label for="email">Email (optional)</label><input id="email" name="email" type="email" autocomplete="email"></div>
+        <div class="field"><label for="occupation">Occupation</label><input id="occupation" name="occupation" type="text" autocomplete="organization-title" placeholder="e.g. Nurse or Community Health Worker" required></div>{% endif %}
+        <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="{% if auth_mode == 'signup' %}new-password{% else %}current-password{% endif %}" required></div>
+        {% if auth_mode == 'signup' %}<div class="field"><label for="password_confirmation">Confirm password</label><input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" required></div>{% endif %}
+        <label class="password-toggle" for="show-password"><input id="show-password" type="checkbox" onchange="togglePasswords(this.checked)"> Show password</label>
+        <button type="submit">{% if auth_mode == 'signup' %}Create healthcare account{% else %}Sign in to dashboard{% endif %}</button>
+      </form>
+      <a class="back" href="{% url 'snakebite:community_home' %}">Back to community home</a>
+    </section>
+  </main>
+  <script>
+    function togglePasswords(show) {
+      document.querySelectorAll('input[type="password"]').forEach(function (field) {
+        field.type = show ? 'text' : 'password';
+      });
+    }
+  </script>
+</body>
+</html>

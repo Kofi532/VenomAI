@@ -4,6 +4,7 @@ from .views import (
 	SNAKEBITE_NATIONALITY_OPTIONS,
 	SNAKEBITE_NATIONALITY_SESSION_KEY,
 )
+from django.urls import reverse
 
 
 _FLAG_ASSET_MAP = {
@@ -28,4 +29,5 @@ def venomguard_profile(request):
 		'venomguard_member_type_code': member_type_code,
 		'venomguard_member_type_label': member_type_labels.get(member_type_code, ''),
 		'venomguard_nationality_flag_path': _FLAG_ASSET_MAP.get(nationality_code, ''),
+		'venomguard_home_url': reverse('snakebite:chw_home') if member_type_code == 'healthcare' else reverse('snakebite:community_home'),
 	}

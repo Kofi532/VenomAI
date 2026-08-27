@@ -1,8 +1,11 @@
 from datetime import timedelta
 from decimal import Decimal
 from hmac import compare_digest
+from pathlib import Path
 from urllib.parse import urlencode
 
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import Count, Q
@@ -29,6 +32,7 @@ from .models import (
 	Snake,
 	SnakeSighting,
 	Symptom,
+	HealthcareMemberProfile,
 )
 from .services import SnakebiteRiskEngine, _haversine_distance_km, get_nearby_antivenom_facilities
 from .serializers import (
@@ -105,6 +109,46 @@ def get_country_label_for_coordinates(latitude, longitude):
 		):
 			return dict(SNAKEBITE_NATIONALITY_OPTIONS).get(country_code, country_code.title())
 	return 'Global report'
+
+
+def get_country_snake_image_options(country_code, selected_category='viper'):
+	folder_names = {
+		'ghana': 'Ghana',
+		'malawi': 'malawi',
+		'kenya': 'Kenya',
+		'nigeria': 'Nigeria',
+		'zambia': 'Zambia',
+	}
+	folder_name = folder_names.get((country_code or '').lower())
+	if not folder_name:
+		return []
+	image_folder = Path(__file__).resolve().parent.parent / 'snakes_pics' / folder_name
+	if not image_folder.is_dir():
+		return []
+	options = []
+	category_selected = False
+	for image_path in sorted(image_folder.iterdir(), key=lambda path: path.name.lower()):
+		if image_path.suffix.lower() not in {'.jpg', '.jpeg', '.png', '.webp'}:
+			continue
+		label = image_path.stem.rsplit('_', 1)[0]
+		name = label.lower()
+		if 'cobra' in name:
+			category = 'cobra'
+		elif 'mamba' in name:
+			category = 'mamba'
+		elif any(keyword in name for keyword in ('adder', 'viper', 'stiletto')):
+			category = 'viper'
+		else:
+			category = 'other'
+		options.append({
+			'label': label,
+			'category': category,
+			'image_url': f'{folder_name}/{image_path.name}',
+			'is_selected': category == selected_category and not category_selected,
+		})
+		if category == selected_category:
+			category_selected = True
+	return options
 
 
 def _resolve_member_type(request):
@@ -184,11 +228,12 @@ def _persist_assessment_from_session(request):
 	assessment_session = request.session.get(SNAKEBITE_ASSESSMENT_SESSION_KEY, {}) or {}
 	if not isinstance(assessment_session, dict):
 		return None
+	assessment = None
 	if assessment_session.get('assessment_id'):
 		try:
-			return PatientAssessment.objects.get(pk=assessment_session['assessment_id'])
+			assessment = PatientAssessment.objects.get(pk=assessment_session['assessment_id'])
 		except PatientAssessment.DoesNotExist:
-			pass
+			assessment = None
 	result = request.session.get('snakebite_assessment_result') or {}
 	country_code = (request.session.get(SNAKEBITE_NATIONALITY_SESSION_KEY) or 'ghana').strip().lower()
 	region = _get_or_create_region_for_country(country_code)
@@ -212,17 +257,37 @@ def _persist_assessment_from_session(request):
 	envenomation = None
 	if predicted and predicted.lower() != 'uncertain':
 		envenomation = EnvenomationType.objects.filter(type_name__iexact=predicted).first()
-	assessment = PatientAssessment.objects.create(
-		region=region,
-		patient_age_group='adult',
-		predicted_envenomation=envenomation,
-		severity_score=severity_score,
-		risk_level=PatientAssessment.calculate_risk_level(severity_score),
-		recommended_action='\n'.join(result.get('recommended_actions') or []),
-	)
-	if symptom_objects:
-		assessment.symptoms_present.set(symptom_objects)
-	assessment_session['assessment_id'] = assessment.pk
+	if assessment is None:
+		assessment = PatientAssessment.objects.create(
+			region=region,
+			location=assessment_session.get('location', country_code.title()),
+			patient_age_group=assessment_session.get('patient_age_group', 'adult'),
+			predicted_envenomation=envenomation,
+			severity_score=severity_score,
+			risk_level=PatientAssessment.calculate_risk_level(severity_score),
+			recommended_action='\n'.join(result.get('recommended_actions') or []),
+			comments=assessment_session.get('comments', ''),
+		)
+		if symptom_objects:
+			assessment.symptoms_present.set(symptom_objects)
+		assessment_session['assessment_id'] = assessment.pk
+	if not assessment_session.get('case_id'):
+		patient_name = 'Community report'
+		if getattr(request.user, 'is_authenticated', False):
+			patient_name = request.user.get_full_name().strip() or request.user.get_username()
+		snake_type = str(assessment_session.get('snake_type') or 'unknown').replace('_', ' ').title()
+		case = PatientCase.objects.create(
+			patient_name=patient_name,
+			patient_age=18 if assessment.patient_age_group == 'adult' else 10,
+			location=assessment.location or country_code.title(),
+			symptoms='\n'.join(selected_symptoms),
+			suspected_snake_type=snake_type,
+			risk_level=assessment.risk_level,
+			status=PatientCase.Status.OPEN,
+			clinical_notes=assessment.comments or assessment.recommended_action,
+			member_type='community',
+		)
+		assessment_session['case_id'] = case.pk
 	request.session[SNAKEBITE_ASSESSMENT_SESSION_KEY] = assessment_session
 	return assessment
 
@@ -340,10 +405,8 @@ def access_view(request):
 		return redirect(f"{reverse('snakebite:access')}?{urlencode({'next': next_url, 'step': 'profile'})}")
 
 	nationality_values = {value for value, _ in SNAKEBITE_NATIONALITY_OPTIONS}
-	member_type_values = {value for value, _ in SNAKEBITE_MEMBER_TYPE_OPTIONS}
 	error_message = ''
 	selected_nationality = request.session.get(SNAKEBITE_NATIONALITY_SESSION_KEY, '')
-	selected_member_type = request.session.get(SNAKEBITE_MEMBER_TYPE_SESSION_KEY, '')
 	if request.method == 'POST':
 		action = request.POST.get('action', 'password')
 
@@ -361,21 +424,14 @@ def access_view(request):
 				error_message = 'Please confirm your password first.'
 			else:
 				selected_nationality = request.POST.get('nationality', '').strip().lower()
-				selected_member_type = request.POST.get('member_type', '').strip().lower()
 				if selected_nationality not in nationality_values:
 					error_message = 'Please select your nationality to continue.'
-				elif selected_member_type not in member_type_values:
-					error_message = 'Please select whether you are a Healthcare or Community member.'
 				else:
 					request.session[SNAKEBITE_ACCESS_SESSION_KEY] = True
 					request.session[SNAKEBITE_NATIONALITY_SESSION_KEY] = selected_nationality
-					request.session[SNAKEBITE_MEMBER_TYPE_SESSION_KEY] = selected_member_type
+					request.session[SNAKEBITE_MEMBER_TYPE_SESSION_KEY] = 'community'
 					request.session.pop(SNAKEBITE_PASSWORD_VERIFIED_SESSION_KEY, None)
-					if selected_member_type == 'community':
-						return redirect(reverse('snakebite:community_home'))
-					if selected_member_type == 'healthcare':
-						return redirect(reverse('snakebite:chw_home'))
-					return redirect(next_url)
+					return redirect(reverse('snakebite:community_home'))
 		else:
 			error_message = 'Invalid request. Please try again.'
 
@@ -386,13 +442,65 @@ def access_view(request):
 			'next_url': next_url,
 			'error_message': error_message,
 			'nationality_options': SNAKEBITE_NATIONALITY_OPTIONS,
-			'member_type_options': SNAKEBITE_MEMBER_TYPE_OPTIONS,
 			'selected_nationality': selected_nationality,
-			'selected_member_type': selected_member_type,
 			'show_profile_form': show_profile_form,
 			'can_edit_profile': can_edit_profile,
 			'change_profile_requested': change_profile_requested,
 		},
+	)
+
+
+def healthcare_auth_view(request):
+	if request.user.is_authenticated and _resolve_member_type(request) == 'healthcare':
+		return redirect('snakebite:chw_home')
+
+	auth_mode = request.POST.get('mode', request.GET.get('mode', 'signin'))
+	if auth_mode not in {'signin', 'signup'}:
+		auth_mode = 'signin'
+	error_message = ''
+	if request.method == 'POST':
+		username = request.POST.get('username', '').strip()
+		password = request.POST.get('password', '')
+		if not username or not password:
+			error_message = 'Enter your username and password to continue.'
+		elif auth_mode == 'signup':
+			occupation = request.POST.get('occupation', '').strip()
+			password_confirmation = request.POST.get('password_confirmation', '')
+			if not occupation:
+				error_message = 'Enter your occupation to continue.'
+			elif User.objects.filter(username__iexact=username).exists():
+				error_message = 'That username is already in use.'
+			elif password != password_confirmation:
+				error_message = 'The passwords do not match.'
+			elif len(password) < 8:
+				error_message = 'Use a password with at least 8 characters.'
+			else:
+				user = User.objects.create_user(
+					username=username,
+					email=request.POST.get('email', '').strip(),
+					password=password,
+				)
+				HealthcareMemberProfile.objects.create(user=user, occupation=occupation)
+				login(request, user)
+				request.session[SNAKEBITE_ACCESS_SESSION_KEY] = True
+				request.session[SNAKEBITE_MEMBER_TYPE_SESSION_KEY] = 'healthcare'
+				request.session.setdefault(SNAKEBITE_NATIONALITY_SESSION_KEY, 'ghana')
+				return redirect('snakebite:chw_home')
+		else:
+			user = authenticate(request, username=username, password=password)
+			if user is None:
+				error_message = 'Those sign-in details were not recognized.'
+			else:
+				login(request, user)
+				request.session[SNAKEBITE_ACCESS_SESSION_KEY] = True
+				request.session[SNAKEBITE_MEMBER_TYPE_SESSION_KEY] = 'healthcare'
+				request.session.setdefault(SNAKEBITE_NATIONALITY_SESSION_KEY, 'ghana')
+				return redirect('snakebite:chw_home')
+
+	return render(
+		request,
+		'snakebite/healthcare_auth.html',
+		{'auth_mode': auth_mode, 'error_message': error_message},
 	)
 
 
@@ -614,82 +722,28 @@ def community_bite_assessment_view(request):
 		if current_step == 2:
 			selected_symptoms = request.POST.getlist('symptoms')
 			assessment_data['symptoms'] = selected_symptoms
-			assessment_data['location'] = request.POST.get('location') or country_label
+			request.session[SNAKEBITE_ASSESSMENT_SESSION_KEY] = assessment_data
+			return redirect(f"{reverse('snakebite:community_bite_assessment')}?step=3")
+
+		if current_step == 3:
+			assessment_data['bite_time'] = (request.POST.get('bite_time') or '').strip()
+			request.session[SNAKEBITE_ASSESSMENT_SESSION_KEY] = assessment_data
+			return redirect(f"{reverse('snakebite:community_bite_assessment')}?step=4")
+
+		if current_step == 4:
+			selected_symptoms = assessment_data.get('symptoms', []) or []
+			assessment_data['location'] = (request.POST.get('location') or '').strip() or country_label
+			assessment_data['patient_age_group'] = (request.POST.get('patient_age_group') or 'adult').strip()
+			assessment_data['comments'] = (request.POST.get('comments') or '').strip()
 			request.session[SNAKEBITE_ASSESSMENT_SESSION_KEY] = assessment_data
 
 			assessment_result = SnakebiteRiskEngine().assess_risk(selected_symptoms or ['swelling'])
 			assessment_result['snake_type'] = assessment_data.get('snake_type', 'unknown')
 			assessment_result['location'] = assessment_data.get('location', country_label)
+			assessment_result['comments'] = assessment_data.get('comments', '')
 			request.session['snakebite_assessment_result'] = _assessment_risk_payload(assessment_result)
 			_ = _persist_assessment_from_session(request)
-			return redirect(f"{reverse('snakebite:community_bite_assessment')}?step=3")
-
-	if current_step == 3:
-		assessment_result = request.session.get('snakebite_assessment_result') or {
-			'risk_level': 'HIGH RISK',
-			'predicted_envenomation': 'Uncertain',
-			'likely_snakes': ['Viper', 'Mamba'],
-			'severity_score': 52,
-			'recommended_actions': ['Start First Aid / Splint Limb', 'Do NOT cut or suck wound', 'Stabilize Patient & Administer Antivenom', 'Urgent Referral to nearest facility'],
-			'snake_type': assessment_data.get('snake_type', 'viper'),
-			'location': assessment_data.get('location', country_label),
-		}
-		assessment_result = _assessment_risk_payload(assessment_result)
-		request.session['snakebite_assessment_result'] = assessment_result
-		_ = _persist_assessment_from_session(request)
-		risk_key = assessment_result.get('risk_key', 'high')
-		first_aid = _first_aid_checklist_for_risk(risk_key, assessment_result.get('snake_type', 'other'))
-		return render(
-			request,
-			'snakebite/risk_result.html',
-			{
-				'nationality_label': selected_country,
-				'member_type_label': request.session.get(SNAKEBITE_MEMBER_TYPE_SESSION_KEY, ''),
-				'country_label': country_label,
-				'assessment_result': assessment_result,
-				'location_label': assessment_result.get('location', country_label),
-				'risk_color': risk_key,
-				'risk_label': 'High Risk' if risk_key == 'high' else 'Medium Risk' if risk_key == 'medium' else 'Low Risk',
-				'risk_banner_text': 'High Risk — Seek care immediately' if risk_key == 'high' else 'Medium Risk — Get prompt clinical review' if risk_key == 'medium' else 'Low Risk — Monitor and seek care if worsening',
-				'first_aid_do': first_aid['do'],
-				'first_aid_dont': first_aid['dont'],
-				'current_step': 3,
-			},
-		)
-
-	if current_step == 4:
-		selected_country = (request.session.get(SNAKEBITE_NATIONALITY_SESSION_KEY) or 'ghana').strip().lower()
-		country_label = dict(SNAKEBITE_NATIONALITY_OPTIONS).get(selected_country, 'Ghana')
-		emergency_number = SNAKEBITE_EMERGENCY_NUMBERS.get(selected_country, '112')
-		country_coordinates = get_country_coordinates(selected_country)
-		facilities = get_nearby_antivenom_facilities(
-			country_coordinates['latitude'],
-			country_coordinates['longitude'],
-			max_distance_km=300,
-		)
-		if not facilities:
-			facilities = [{
-				'facility_name': 'National Health Facility',
-				'facility_type': 'Referral Center',
-				'region': {'name': country_label},
-				'antivenom_cost_ghs': 'Available on request',
-				'contact_phone': emergency_number,
-				'distance_km': 0,
-			}]
-		return render(
-			request,
-			'snakebite/nearest_help.html',
-			{
-				'nationality_label': selected_country,
-				'member_type_label': request.session.get(SNAKEBITE_MEMBER_TYPE_SESSION_KEY, ''),
-				'country_label': country_label,
-				'facilities': facilities,
-				'primary_facility': facilities[0] if facilities else None,
-				'emergency_number': emergency_number,
-				'current_step': 4,
-				'back_to_step_url': f"{reverse('snakebite:community_bite_assessment')}?step=3",
-			},
-		)
+			return redirect(reverse('snakebite:community_risk_result'))
 
 	return render(
 		request,
@@ -704,6 +758,8 @@ def community_bite_assessment_view(request):
 			'country_options': SNAKEBITE_NATIONALITY_OPTIONS,
 			'selected_country': selected_country,
 			'selected_country_label': country_label,
+			'assessment_data': assessment_data,
+			'snake_image_options': get_country_snake_image_options(selected_country, assessment_data.get('snake_type', 'viper')),
 			'current_step': current_step,
 		},
 	)
@@ -781,6 +837,11 @@ def community_nearest_help_view(request):
 			'current_step': 4,
 		},
 	)
+
+
+@snakebite_password_required
+def community_get_help_view(request):
+	return render(request, 'snakebite/community_get_help.html')
 
 
 @snakebite_password_required
@@ -1220,7 +1281,12 @@ class CHWDashboardView(View):
 			'new_alerts': PatientCase.objects.filter(risk_level=PatientCase.RiskLevel.HIGH, status=PatientCase.Status.OPEN).count(),
 		}
 		role_label = 'CHW'
-
+		user_name = ''
+		occupation = 'Healthcare Worker'
+		if getattr(request.user, 'is_authenticated', False):
+			user_name = request.user.get_full_name().strip() or request.user.get_username()
+			occupation = getattr(getattr(request.user, 'healthcare_profile', None), 'occupation', '') or occupation
+		user_name = user_name or 'CHW'
 		return render(
 			request,
 			'snakebite/chw_dashboard.html',
@@ -1236,6 +1302,8 @@ class CHWDashboardView(View):
 				'new_alerts': stats['new_alerts'],
 				'latest_case': PatientCase.objects.order_by('-created_at').first(),
 				'role_label': role_label,
+				'occupation': occupation,
+				'user_name': user_name,
 			},
 		)
 
@@ -1442,7 +1510,7 @@ def education_training_view(request):
 
 @snakebite_password_required
 def antivenom_map_view(request):
-	facilities = HealthFacility.objects.select_related('region').filter(antivenom_available=True).order_by('region__name', 'name')
+	facilities = HealthFacility.objects.select_related('region').order_by('region__name', 'name')
 	facilities_payload = []
 	for facility in facilities:
 		latitude = float(facility.latitude) if facility.latitude is not None else None
@@ -1460,6 +1528,72 @@ def antivenom_map_view(request):
 				'contact_number': facility.contact_number,
 			}
 		)
+	if not any(
+		facility['latitude'] is not None and facility['longitude'] is not None
+		for facility in facilities_payload
+	):
+		facilities_payload = [
+			{
+				'id': 'demo-koforidua', 'name': 'Koforidua Regional Hospital',
+				'facility_type': 'Regional Hospital', 'region': 'Eastern Region',
+				'latitude': 6.0941, 'longitude': -0.2606, 'antivenom_available': True,
+				'antivenom_cost': 300.0, 'contact_number': '030 222 2222',
+			},
+			{
+				'id': 'demo-kumasi', 'name': 'Komfo Anokye Teaching Hospital',
+				'facility_type': 'Teaching Hospital', 'region': 'Ashanti Region',
+				'latitude': 6.6885, 'longitude': -1.6244, 'antivenom_available': False,
+				'antivenom_cost': None, 'contact_number': '032 202 2301',
+			},
+			{
+				'id': 'demo-accra', 'name': 'Korle Bu Teaching Hospital',
+				'facility_type': 'Teaching Hospital', 'region': 'Greater Accra',
+				'latitude': 5.5502, 'longitude': -0.1966, 'antivenom_available': True,
+				'antivenom_cost': 450.0, 'contact_number': '030 266 5401',
+			},
+			{
+				'id': 'demo-tamale', 'name': 'Tamale Teaching Hospital',
+				'facility_type': 'Teaching Hospital', 'region': 'Northern Region',
+				'latitude': 9.4075, 'longitude': -0.8533, 'antivenom_available': True,
+				'antivenom_cost': 380.0, 'contact_number': '037 202 8333',
+			},
+			{
+				'id': 'demo-sunyani', 'name': 'Sunyani Regional Hospital',
+				'facility_type': 'Regional Hospital', 'region': 'Bono Region',
+				'latitude': 7.3349, 'longitude': -2.3123, 'antivenom_available': False,
+				'antivenom_cost': None, 'contact_number': '035 202 2241',
+			},
+			{
+				'id': 'demo-ho', 'name': 'Ho Teaching Hospital',
+				'facility_type': 'Teaching Hospital', 'region': 'Volta Region',
+				'latitude': 6.6119, 'longitude': 0.4713, 'antivenom_available': True,
+				'antivenom_cost': 275.0, 'contact_number': '036 202 2333',
+			},
+			{
+				'id': 'demo-wa', 'name': 'Wa Municipal Hospital',
+				'facility_type': 'Municipal Hospital', 'region': 'Upper West Region',
+				'latitude': 10.0601, 'longitude': -2.5019, 'antivenom_available': False,
+				'antivenom_cost': None, 'contact_number': '039 202 2233',
+			},
+			{
+				'id': 'demo-cape-coast', 'name': 'Cape Coast Teaching Hospital',
+				'facility_type': 'Teaching Hospital', 'region': 'Central Region',
+				'latitude': 5.1315, 'longitude': -1.2795, 'antivenom_available': True,
+				'antivenom_cost': 325.0, 'contact_number': '033 213 0500',
+			},
+			{
+				'id': 'demo-bolgatanga', 'name': 'Bolgatanga Regional Hospital',
+				'facility_type': 'Regional Hospital', 'region': 'Upper East Region',
+				'latitude': 10.7856, 'longitude': -0.8514, 'antivenom_available': False,
+				'antivenom_cost': None, 'contact_number': '038 202 2300',
+			},
+			{
+				'id': 'demo-kasoa', 'name': 'Kasoa Community Health Centre',
+				'facility_type': 'Health Centre', 'region': 'Central Region',
+				'latitude': 5.5346, 'longitude': -0.4168, 'antivenom_available': True,
+				'antivenom_cost': 200.0, 'contact_number': '030 309 1100',
+			},
+		]
 
 	return render(
 		request,

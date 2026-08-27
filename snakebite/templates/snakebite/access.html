@@ -209,7 +209,7 @@
       <h1>{% if show_profile_form %}Set your profile{% else %}Welcome back{% endif %}</h1>
       <p class="intro">
         {% if show_profile_form %}
-          Password confirmed. Choose your country and role to continue.
+          Password confirmed. Choose your country to continue.
         {% else %}
           Enter your access password to continue to the VenomGuard AI application.
         {% endif %}
@@ -237,20 +237,8 @@
               {% endfor %}
             </select>
           </div>
-          <div class="field-group">
-            <label>Member type</label>
-            <div class="member-options" role="radiogroup" aria-label="Member type">
-              {% for code, label in member_type_options %}
-                <label class="member-option" for="member-{{ code }}">
-                  <input id="member-{{ code }}" type="radio" name="member_type" value="{{ code }}" {% if selected_member_type == code %}checked{% endif %} required>
-                  <span>{{ label }}</span>
-                </label>
-              {% endfor %}
-            </div>
-          </div>
           <div class="actions">
-            <button type="submit">Continue to app</button>
-            <a class="back" href="/">Back to project selector</a>
+            <button type="submit">Continue to community home</button>
           </div>
         </form>
       {% else %}
@@ -268,7 +256,6 @@
           </label>
           <div class="actions">
             <button type="submit">Continue</button>
-            <a class="back" href="/">Back to project selector</a>
           </div>
         </form>
       {% endif %}

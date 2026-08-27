@@ -12,14 +12,14 @@
   >
   <style>
     :root {
-      --bg: #0f3822;
-      --panel: rgba(255, 255, 255, 0.08);
-      --panel-border: rgba(255, 255, 255, 0.12);
-      --text: #f8fff6;
-      --muted: #cfe2d1;
-      --accent: #9fe59a;
-      --ok-text: #81f0b1;
-      --shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+      --bg: #f5f7f5;
+      --panel: #ffffff;
+      --panel-border: #e0e7e1;
+      --text: #173d2b;
+      --muted: #6b7e72;
+      --accent: #f5b800;
+      --ok-text: #237044;
+      --shadow: 0 8px 18px rgba(28, 65, 42, 0.06);
     }
 
     * {
@@ -29,11 +29,9 @@
     html, body {
       margin: 0;
       min-height: 100%;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--text);
-      background:
-        radial-gradient(circle at top, rgba(159, 229, 154, 0.16), transparent 30%),
-        linear-gradient(180deg, #123d26 0%, var(--bg) 55%, #0b2818 100%);
+      background: var(--bg);
     }
 
     body {
@@ -54,8 +52,8 @@
       padding: 12px 10px;
       margin-bottom: 12px;
       border-radius: 16px;
-      background: rgba(9, 31, 20, 0.92);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #ffffff;
+      border: 1px solid var(--panel-border);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }
@@ -68,8 +66,8 @@
       place-items: center;
       text-decoration: none;
       color: var(--text);
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
+      background: #edf5ee;
+      border: 1px solid #d8e1da;
       font-size: 20px;
       line-height: 1;
     }
@@ -89,7 +87,7 @@
       border: 1px solid var(--panel-border);
       box-shadow: var(--shadow);
       margin-bottom: 12px;
-      background: #153a27;
+      background: #dce9df;
       height: 60vh;
       min-height: 320px;
     }
@@ -106,6 +104,21 @@
       overflow-y: auto;
       padding-right: 2px;
     }
+
+    .map-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .legend-item { display: inline-flex; align-items: center; gap: 7px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .legend-dot.available { background: #21b95b; }
+    .legend-dot.unavailable { background: #e34d4d; }
 
     .facility-card {
       border-radius: 14px;
@@ -147,6 +160,27 @@
       box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
     }
 
+    .red-pin {
+      width: 20px;
+      height: 20px;
+      border-radius: 50% 50% 50% 0;
+      background: #d83f3f;
+      transform: rotate(-45deg);
+      border: 2px solid #ffd1d1;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+    }
+
+    .red-pin::after {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fff0f0;
+      position: absolute;
+      top: 4px;
+      left: 4px;
+    }
+
     .green-pin::after {
       content: "";
       width: 8px;
@@ -165,11 +199,11 @@
       bottom: 0;
       z-index: 30;
       width: min(480px, 100%);
-      background: rgba(10, 17, 16, 0.94);
-      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255, 255, 255, 0.96);
+      border-top: 1px solid var(--panel-border);
       border-radius: 18px 18px 0 0;
       backdrop-filter: blur(12px);
-      box-shadow: 0 -12px 30px rgba(0,0,0,0.28);
+      box-shadow: 0 -8px 24px rgba(25, 58, 38, 0.08);
     }
 
     .bottom-nav-inner {
@@ -185,7 +219,7 @@
       align-items: center;
       justify-content: center;
       gap: 5px;
-      color: #a9b8b3;
+      color: #84958a;
       font-size: 10px;
       letter-spacing: 0.04em;
       text-transform: uppercase;
@@ -207,20 +241,20 @@
     }
 
     .nav-item.active {
-      color: #f7ca4d;
-      background: rgba(247, 202, 77, 0.1);
-      box-shadow: inset 0 0 0 1px rgba(247, 202, 77, 0.18);
+      color: #173d2b;
+      background: #edf5ee;
+      box-shadow: inset 0 0 0 1px rgba(23, 61, 43, 0.12);
     }
 
     .nav-item:hover {
-      color: #edf7f3;
+      color: #173d2b;
     }
 
     .leaflet-popup-content-wrapper,
     .leaflet-popup-tip {
-      background: #173d2a;
-      color: #f2fff2;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: #ffffff;
+      color: #173d2b;
+      border: 1px solid #d8e1da;
     }
   </style>
 </head>
@@ -239,23 +273,22 @@
       <div id="antivenom-map"></div>
     </section>
 
+    <div class="map-legend" aria-label="Map legend">
+      <span class="legend-item"><span class="legend-dot available" aria-hidden="true"></span>Antivenom available</span>
+      <span class="legend-item"><span class="legend-dot unavailable" aria-hidden="true"></span>No antivenom</span>
+    </div>
+
     <section class="drawer" aria-label="Nearby facilities list">
-      <article class="facility-card">
-        <h2 class="facility-name">DISTRICT HOSPITAL</h2>
-        <p class="facility-line">Donkorkrom</p>
-        <p class="status-ok">Antivenom available</p>
-        <p class="facility-line">Cost: GHS 300</p>
-      </article>
-
-      <article class="facility-card">
-        <h2 class="facility-name">TEASE HEALTH CENTER</h2>
-        <p class="facility-line">Code: GHS 160 | Antivenom available | Cost: GHS 160</p>
-      </article>
-
-      <article class="facility-card">
-        <h2 class="facility-name">AMANKWAKROM CHPS</h2>
-        <p class="facility-line">Antivenom available | Cost: GHS 160</p>
-      </article>
+      {% for facility in facilities_payload %}
+        <article class="facility-card">
+          <h2 class="facility-name">{{ facility.name }}</h2>
+          <p class="facility-line">{{ facility.facility_type }} · {{ facility.region }}</p>
+          <p class="status-ok"{% if not facility.antivenom_available %} style="color: #ff9a94;"{% endif %}>
+            {% if facility.antivenom_available %}Antivenom available{% else %}No antivenom available{% endif %}
+          </p>
+          <p class="facility-line">{% if facility.antivenom_cost %}Cost: GHS {{ facility.antivenom_cost }}{% else %}Cost: Not listed{% endif %}</p>
+        </article>
+      {% endfor %}
     </section>
   </main>
 
@@ -313,20 +346,20 @@
 
       var bounds = [];
       validFacilities.forEach(function (facility) {
-        var greenMarker = L.divIcon({
-          className: 'green-pin',
+        var markerIcon = L.divIcon({
+          className: facility.antivenom_available ? 'green-pin' : 'red-pin',
           iconSize: [20, 20],
           iconAnchor: [10, 20],
           popupAnchor: [0, -20]
         });
 
-        var marker = L.marker([facility.latitude, facility.longitude], { icon: greenMarker }).addTo(map);
+        var marker = L.marker([facility.latitude, facility.longitude], { icon: markerIcon }).addTo(map);
         var priceText = facility.antivenom_cost !== null ? 'GHS ' + facility.antivenom_cost : 'Not listed';
         var phoneText = facility.contact_number || 'No contact number';
         marker.bindPopup(
           '<strong>' + facility.name + '</strong><br>' +
           facility.facility_type + ' · ' + facility.region + '<br>' +
-          'Stock: Available<br>' +
+          'Stock: ' + (facility.antivenom_available ? 'Available' : 'Not available') + '<br>' +
           'Price: ' + priceText + '<br>' +
           'Phone: ' + phoneText
         );

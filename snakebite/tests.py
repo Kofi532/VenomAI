@@ -1,8 +1,9 @@
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import HealthFacility, PatientAssessment, PatientCase, Referral, Region, SnakeSighting, Symptom
+from .models import HealthcareMemberProfile, HealthFacility, PatientAssessment, PatientCase, Referral, Region, SnakeSighting, Symptom
 
 
 class SnakebiteAccessAndCHWTests(TestCase):
@@ -32,7 +33,21 @@ class SnakebiteAccessAndCHWTests(TestCase):
 
         response = self.client.get(reverse('snakebite:chw_home'))
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Welcome, CHW')
         self.assertContains(response, 'Healthcare Worker')
+
+    def test_chw_home_welcomes_authenticated_user_by_name(self):
+        user = User.objects.create_user(username='amina', first_name='Amina', last_name='Boateng')
+        self.client.force_login(user)
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_nationality'] = 'ghana'
+        session['snakebite_member_type'] = 'healthcare'
+        session.save()
+
+        response = self.client.get(reverse('snakebite:chw_home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Welcome, Amina Boateng')
 
     def test_chw_home_dashboard_layout_uses_live_case_and_alert_counts(self):
         case = PatientCase.objects.create(
@@ -57,7 +72,7 @@ class SnakebiteAccessAndCHWTests(TestCase):
 
         response = self.client.get(reverse('snakebite:chw_home'))
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, 'Good morning')
+        self.assertContains(response, 'Welcome, CHW')
         self.assertContains(response, 'Role: CHW')
         self.assertContains(response, 'New Snakebite Case')
         self.assertContains(response, 'My Cases')
@@ -233,6 +248,9 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertContains(response, reverse('snakebite:first_aid'))
         self.assertContains(response, reverse('snakebite:community_nearest_help'))
         self.assertContains(response, reverse('snakebite:education_training'))
+        self.assertContains(response, 'aria-label="VenomGuard AI home"')
+        self.assertContains(response, 'Are you a healthcare member?')
+        self.assertContains(response, reverse('snakebite:healthcare_auth'))
 
         learn_response = self.client.get(reverse('snakebite:education_training'))
         self.assertEqual(learn_response.status_code, 200)
@@ -254,6 +272,155 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Timeline')
         self.assertNotContains(response, 'name="nationality"')
+
+    def test_antivenom_map_shows_available_and_unavailable_locations(self):
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_member_type'] = 'community'
+        session.save()
+
+        response = self.client.get(reverse('snakebite:map'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Antivenom available')
+        self.assertContains(response, 'No antivenom')
+        self.assertContains(response, 'Koforidua Regional Hospital')
+        self.assertContains(response, 'Komfo Anokye Teaching Hospital')
+        self.assertContains(response, 'Tamale Teaching Hospital')
+        self.assertContains(response, 'Bolgatanga Regional Hospital')
+        self.assertContains(response, "'red-pin'")
+        self.assertContains(response, "'green-pin'")
+
+    def test_healthcare_prompt_access_flow_redirects_to_chw_dashboard(self):
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_nationality'] = 'ghana'
+        session['snakebite_member_type'] = 'community'
+        session.save()
+
+        access_response = self.client.get(
+            reverse('snakebite:access'),
+            {'reset_access': '1', 'next': reverse('snakebite:chw_home')},
+        )
+        self.assertEqual(access_response.status_code, 200)
+        self.assertContains(access_response, 'Enter your access password')
+
+        profile_response = self.client.post(
+            reverse('snakebite:access'),
+            {
+                'action': 'password',
+                'password': 'Dr.EricNyarko',
+                'next': reverse('snakebite:chw_home'),
+            },
+        )
+        self.assertEqual(profile_response.status_code, 302)
+
+        dashboard_response = self.client.post(
+            reverse('snakebite:access'),
+            {
+                'action': 'profile',
+                'nationality': 'ghana',
+                'member_type': 'healthcare',
+                'next': reverse('snakebite:chw_home'),
+            },
+        )
+        self.assertEqual(dashboard_response.status_code, 302)
+        self.assertEqual(dashboard_response.url, reverse('snakebite:chw_home'))
+
+    def test_access_profile_selects_country_only_and_redirects_to_community_home(self):
+        session = self.client.session
+        session['snakebite_password_verified'] = True
+        session.save()
+
+        response = self.client.get(
+            reverse('snakebite:access'),
+            {'next': reverse('snakebite:home'), 'step': 'profile'},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Choose your country to continue.')
+        self.assertNotContains(response, 'Member type')
+
+        response = self.client.post(
+            reverse('snakebite:access'),
+            {
+                'action': 'profile',
+                'nationality': 'ghana',
+                'next': reverse('snakebite:home'),
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('snakebite:community_home'))
+        self.assertEqual(self.client.session['snakebite_member_type'], 'community')
+
+    def test_risk_result_uses_blank_find_help_page(self):
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_member_type'] = 'community'
+        session.save()
+
+        response = self.client.get(reverse('snakebite:community_risk_result'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Find Nearest Help')
+        self.assertContains(response, reverse('snakebite:community_get_help'))
+        self.assertNotContains(response, 'Call for Transport Help')
+        self.assertNotContains(response, 'Next: Find Nearest Help')
+
+        blank_response = self.client.get(reverse('snakebite:community_get_help'))
+        self.assertEqual(blank_response.status_code, 200)
+        self.assertEqual(blank_response.content, b'')
+
+    def test_healthcare_signup_redirects_to_chw_dashboard(self):
+        response = self.client.post(
+            reverse('snakebite:healthcare_auth'),
+            {
+                'mode': 'signup',
+                'username': 'healthworker',
+                'occupation': 'Community Health Worker',
+                'password': 'secure-pass-123',
+                'password_confirmation': 'secure-pass-123',
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('snakebite:chw_home'))
+        self.assertTrue(self.client.session['snakebite_access_granted'])
+        self.assertEqual(self.client.session['snakebite_member_type'], 'healthcare')
+        self.assertEqual(
+            HealthcareMemberProfile.objects.get(user__username='healthworker').occupation,
+            'Community Health Worker',
+        )
+
+    def test_healthcare_signin_redirects_to_chw_dashboard(self):
+        User.objects.create_user(username='existing-worker', password='secure-pass-123')
+
+        response = self.client.post(
+            reverse('snakebite:healthcare_auth'),
+            {
+                'mode': 'signin',
+                'username': 'existing-worker',
+                'password': 'secure-pass-123',
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('snakebite:chw_home'))
+        self.assertEqual(self.client.session['snakebite_member_type'], 'healthcare')
+
+    def test_dashboard_shows_user_name_after_welcome_and_occupation_as_role(self):
+        user = User.objects.create_user(username='kofi', first_name='Kofi', password='secure-pass-123')
+        HealthcareMemberProfile.objects.create(user=user, occupation='Registered Nurse')
+        self.client.force_login(user)
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_member_type'] = 'healthcare'
+        session.save()
+
+        response = self.client.get(reverse('snakebite:chw_home'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Welcome, Kofi')
+        self.assertContains(response, 'Role: Registered Nurse')
+        self.assertLess(response.content.find(b'Welcome, Kofi'), response.content.find(b'Role: Registered Nurse'))
 
     def test_community_home_renders_dark_timeline_layout(self):
         session = self.client.session
@@ -844,6 +1011,63 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertTrue(assessment.symptoms_present.filter(slug='swelling').exists())
         self.assertEqual(assessment.region.code.lower(), 'ghana')
 
+    def test_completed_bite_assessment_creates_dashboard_patient_case(self):
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_nationality'] = 'ghana'
+        session['snakebite_member_type'] = 'community'
+        session['snakebite_assessment_data'] = {
+            'snake_type': 'viper',
+            'symptoms': ['swelling', 'bleeding-gums'],
+        }
+        session.save()
+
+        response = self.client.post(
+            reverse('snakebite:community_bite_assessment') + '?step=4',
+            {
+                'step': '4',
+                'location': 'Kumasi',
+                'patient_age_group': 'adult',
+                'comments': 'Needs urgent review',
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('snakebite:community_risk_result'))
+        case = PatientCase.objects.get(location='Kumasi')
+        self.assertEqual(case.status, PatientCase.Status.OPEN)
+        self.assertEqual(case.member_type, 'community')
+        self.assertIn('swelling', case.symptoms)
+        self.assertEqual(case.clinical_notes, 'Needs urgent review')
+
+    def test_resumed_assessment_also_creates_missing_dashboard_case(self):
+        region = Region.objects.create(name='Ghana', code='ghana')
+        assessment = PatientAssessment.objects.create(
+            region=region,
+            location='Accra',
+            patient_age_group='adult',
+            risk_level=PatientAssessment.RiskLevel.HIGH,
+            severity_score=52,
+        )
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_nationality'] = 'ghana'
+        session['snakebite_member_type'] = 'community'
+        session['snakebite_assessment_data'] = {
+            'assessment_id': assessment.pk,
+            'snake_type': 'cobra',
+            'symptoms': ['swelling'],
+            'location': 'Accra',
+        }
+        session.save()
+
+        self.client.post(
+            reverse('snakebite:community_bite_assessment') + '?step=4',
+            {'step': '4', 'location': 'Accra', 'patient_age_group': 'adult'},
+        )
+
+        self.assertEqual(PatientCase.objects.filter(location='Accra').count(), 1)
+
     def test_case_details_lists_recent_patient_assessments(self):
         region = Region.objects.create(name='Ghana', code='ghana')
         assessment = PatientAssessment.objects.create(
@@ -913,6 +1137,7 @@ class SnakebiteAccessAndCHWTests(TestCase):
         response = self.client.get(reverse('snakebite:case_details', kwargs={'pk': case.pk}))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Send Referral')
+        self.assertContains(response, 'href="/venomguard/map/"')
         self.assertContains(response, 'Call Facility')
         self.assertContains(response, 'tel:+233201234567')
         self.assertContains(response, 'High Risk')

@@ -1,794 +1,300 @@
 {% extends 'snakebite/base.html' %}
 {% load static %}
 
-{% block title %}VenomGuard AI | Timeline{% endblock %}
+{% block title %}VenomGuard AI | Home{% endblock %}
 
 {% block extra_styles %}
 <style>
-    body {
-        background: #07130f;
-        color: #edf7f3;
+    body { background: #f5f7f5; color: #10221b; }
+    .page-shell { max-width: 480px; padding: 0 16px 104px; }
+    .community-home {
+        min-height: calc(100vh - 104px);
+        padding-top: 14px;
     }
-    .page-shell {
-        max-width: 480px;
-        padding-top: 0;
-        padding-bottom: 110px;
-    }
-    .timeline-page {
-        min-height: 100vh;
-        background:
-            radial-gradient(circle at top, rgba(38, 92, 88, 0.28), transparent 28%),
-            #07130f;
-        color: #edf7f3;
-        padding: 14px 14px 20px;
-    }
-    .timeline-topbar {
+    .healthcare-prompt {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 4px 4px 16px;
+        gap: 14px;
+        margin-bottom: 14px;
+        padding: 14px 16px;
+        border: 1px solid #d8e6d9;
+        border-radius: 16px;
+        background: #fff;
     }
-    .title-group {
-        display: flex;
-        align-items: center;
-        gap: 10px;
+    .healthcare-prompt-copy { min-width: 0; }
+    .healthcare-prompt-title {
+        margin: 0 0 3px;
+        color: #173d2b;
+        font-size: .82rem;
+        font-weight: 850;
     }
-    .clock-mark {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(136, 192, 255, 0.12);
-        border: 1px solid rgba(136, 192, 255, 0.28);
-        color: #9ecbff;
-        font-size: 18px;
-    }
-    .timeline-title {
-        font-size: 1.05rem;
-        font-weight: 800;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
+    .healthcare-prompt-text {
         margin: 0;
-        color: #f5f7fb;
+        color: #6b7e72;
+        font-size: .72rem;
+        line-height: 1.35;
     }
-    .live-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        border-radius: 999px;
-        padding: 7px 12px;
-        background: rgba(30, 63, 48, 0.8);
-        border: 1px solid rgba(82, 235, 126, 0.28);
-        color: #d7f9dd;
-        font-size: 0.72rem;
-        font-weight: 700;
+    .healthcare-prompt-link {
+        flex: 0 0 auto;
+        padding: 9px 12px;
+        border-radius: 10px;
+        background: #f5b800;
+        color: #173d2b;
+        font-size: .72rem;
+        font-weight: 850;
+        text-decoration: none;
         white-space: nowrap;
     }
-    .live-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #48d17b;
-        box-shadow: 0 0 0 5px rgba(72, 209, 123, 0.14);
+    .healthcare-prompt-link:hover { background: #e5a900; }
+    .community-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 48px;
+        margin-bottom: 22px;
     }
-    .cta-bar {
+    .header-icon {
+        width: 38px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        border: 1px solid #d8e1da;
+        border-radius: 12px;
+        background: #fff;
+        color: #173d2b;
+        font-size: 22px;
+        text-decoration: none;
+    }
+    .brand-mark {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border-radius: 11px;
+        background: #173d2b;
+        color: #f5b800;
+        font-size: 19px;
+        box-shadow: 0 6px 14px rgba(23, 61, 43, .18);
+    }
+    .brand-title {
+        margin: 0;
+        color: #173d2b;
+        font-size: 1.05rem;
+        font-weight: 850;
+        letter-spacing: -.01em;
+    }
+    .hero-card {
+        position: relative;
+        overflow: hidden;
+        min-height: 238px;
+        padding: 24px 20px 20px;
+        border-radius: 24px;
+        background: #e5efe7;
+        border: 1px solid #d6e5d8;
+    }
+    .hero-copy { position: relative; z-index: 1; max-width: 68%; }
+    .eyebrow {
+        margin: 0 0 12px;
+        color: #47725a;
+        font-size: .68rem;
+        font-weight: 800;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+    }
+    .hero-title {
+        margin: 0;
+        color: #173d2b;
+        font-size: 1.72rem;
+        line-height: 1.12;
+        letter-spacing: -.035em;
+    }
+    .snake-illustration {
+        position: absolute;
+        right: -5px;
+        bottom: 4px;
+        width: 150px;
+        height: 165px;
+        display: grid;
+        place-items: center;
+        font-size: 7.6rem;
+        transform: rotate(-13deg);
+        filter: drop-shadow(0 13px 8px rgba(23, 61, 43, .14));
+    }
+    .assessment-button {
+        position: absolute;
+        z-index: 2;
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+        display: flex;
+        min-height: 50px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: #173d2b;
+        color: #fff;
+        font-size: .86rem;
+        font-weight: 800;
+        text-decoration: none;
+        box-shadow: 0 9px 18px rgba(23, 61, 43, .2);
+        transition: transform .15s ease, background .15s ease;
+    }
+    .assessment-button:hover { background: #24593e; transform: translateY(-1px); }
+    .section-heading {
+        margin: 28px 2px 12px;
+        color: #173d2b;
+        font-size: .78rem;
+        font-weight: 850;
+        letter-spacing: .11em;
+        text-transform: uppercase;
+    }
+    .quick-actions { display: grid; gap: 10px; }
+    .quick-action {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-height: 68px;
+        padding: 12px 14px;
+        border: 1px solid #e0e7e1;
+        border-radius: 16px;
+        background: #fff;
+        color: #173d2b;
+        text-decoration: none;
+        box-shadow: 0 6px 16px rgba(28, 65, 42, .05);
+    }
+    .quick-icon {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 40px;
+        border-radius: 12px;
+        background: #edf5ee;
+        color: #2a6645;
+        font-size: 20px;
+    }
+    .quick-label { flex: 1; font-size: .9rem; font-weight: 800; }
+    .quick-arrow { color: #91a69a; font-size: 1.3rem; }
+    .language-form {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        margin: 6px 0 18px;
-        padding: 10px 12px;
+        margin-top: 26px;
+        padding: 14px;
+        border: 1px solid #e0e7e1;
         border-radius: 16px;
-        background: rgba(19, 35, 31, 0.9);
-        border: 1px solid rgba(255,255,255,0.05);
+        background: #fff;
     }
-    .cta-actions {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        gap: 8px;
-    }
-    .cta-copy {
-        font-size: 0.72rem;
-        color: #b6cdc5;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-    }
-    .cta-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 38px;
-        padding: 0 14px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #f7ca4d, #ffb835);
-        border: none;
-        color: #101926;
+    .language-label { color: #6b7e72; font-size: .76rem; font-weight: 700; }
+    .language-select {
+        max-width: 180px;
+        border: 0;
+        outline: 0;
+        color: #173d2b;
+        background: transparent;
+        font-size: .78rem;
         font-weight: 800;
-        font-size: 0.78rem;
+        text-align: right;
+    }
+    .community-nav {
+        position: fixed;
+        left: 50%;
+        bottom: 0;
+        z-index: 30;
+        width: min(480px, 100%);
+        transform: translateX(-50%);
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        padding: 8px 10px calc(10px + env(safe-area-inset-bottom));
+        border-top: 1px solid #e2e9e3;
+        background: rgba(255, 255, 255, .96);
+        box-shadow: 0 -8px 24px rgba(25, 58, 38, .08);
+        backdrop-filter: blur(12px);
+    }
+    .community-nav a {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 2px;
+        color: #94a49a;
+        font-size: .67rem;
+        font-weight: 800;
         text-decoration: none;
     }
-    .cta-btn--secondary {
-        background: transparent;
-        border: 1px solid rgba(247, 202, 77, 0.65);
-        color: #f7ca4d;
-    }
-    @media (max-width: 700px) {
-        .cta-bar {
-            align-items: stretch;
-            flex-direction: column;
-        }
-        .cta-actions {
-            justify-content: stretch;
-        }
-        .cta-actions .cta-btn {
-            flex: 1 1 140px;
-        }
-    }
-    .country-selector {
-        margin: 6px 0 18px;
-        padding: 12px 12px 10px;
-        border-radius: 16px;
-        background: rgba(19, 35, 31, 0.9);
-        border: 1px solid rgba(255,255,255,0.05);
-    }
-    .country-selector__label {
-        margin: 0 0 10px;
-        color: #a8c9be;
-        font-size: 0.68rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        font-weight: 700;
-    }
-    .country-selector__row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    .country-selector__pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.08);
-        background: rgba(255,255,255,0.04);
-        color: #eafaf7;
-        padding: 8px 12px;
-        font-size: 0.76rem;
-        font-weight: 700;
-        cursor: pointer;
-    }
-    .country-selector__pill.selected {
-        background: linear-gradient(135deg, rgba(255, 191, 72, 0.25), rgba(255, 182, 30, 0.14));
-        border-color: rgba(255, 192, 94, 0.7);
-        color: #ffd778;
-    }
-    .country-selector__flag {
-        width: 22px;
-        height: 16px;
-        object-fit: cover;
-        border-radius: 4px;
-        border: 1px solid rgba(255,255,255,0.35);
-        flex-shrink: 0;
-    }
-    .filter-row {
-        display: flex;
-        gap: 10px;
-        overflow-x: auto;
-        scrollbar-width: none;
-        padding: 4px 2px 14px;
-        margin-bottom: 6px;
-    }
-    .filter-row::-webkit-scrollbar { display: none; }
-    .filter-pill {
-        flex: 0 0 auto;
-        min-width: 110px;
-        border: 1px solid rgba(255,255,255,0.08);
-        background: rgba(255,255,255,0.04);
-        color: #d9e9e3;
-        border-radius: 999px;
-        padding: 10px 16px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-        cursor: pointer;
-    }
-    .filter-pill.active {
-        background: linear-gradient(135deg, rgba(255, 191, 72, 0.25), rgba(255, 182, 30, 0.14));
-        border-color: rgba(255, 192, 94, 0.7);
-        color: #ffd778;
-        box-shadow: 0 6px 18px rgba(255, 182, 30, 0.18);
-    }
-    .date-group {
-        margin-top: 18px;
-    }
-    .day-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin: 0 0 10px;
-        font-size: 0.7rem;
-        letter-spacing: 0.12em;
-        color: #a1c0b8;
-        text-transform: uppercase;
-        font-weight: 700;
-    }
-    .day-header::before {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background: rgba(255,255,255,0.06);
-    }
-    .timeline-list {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-    }
-    .sighting-card {
-        display: grid;
-        grid-template-columns: 84px minmax(0, 1fr) auto;
-        gap: 10px;
-        align-items: center;
-        padding: 12px 12px;
-        border-radius: 18px;
-        background: rgba(19, 31, 27, 0.9);
-        border: 1px solid rgba(255,255,255,0.06);
-        box-shadow: 0 15px 25px rgba(0,0,0,0.14);
-        cursor: pointer;
-    }
-    .thumb {
-        width: 84px;
-        height: 84px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
-        overflow: hidden;
-        border: 1px solid rgba(255,255,255,0.06);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: rgba(255,255,255,0.8);
-        font-size: 1.8rem;
-        position: relative;
-    }
-    .thumb img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-    .thumb-placeholder {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
-        gap: 4px;
-        background: linear-gradient(135deg, rgba(255, 201, 91, 0.15), rgba(148, 163, 184, 0.08));
-        color: #dfece8;
-        text-align: center;
-        padding: 8px 6px;
-    }
-    .thumb-placeholder .placeholder-icon {
-        font-size: 1.4rem;
-        line-height: 1;
-    }
-    .thumb-placeholder .placeholder-text {
-        font-size: 0.5rem;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        opacity: 0.8;
-    }
-    .card-body {
-        min-width: 0;
-    }
-    .headline {
-        margin: 0;
-        font-size: 0.87rem;
-        font-weight: 800;
-        color: #f8fbfa;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-    }
-    .subtitle {
-        margin: 5px 0 6px;
-        color: #bdcfc9;
-        font-size: 0.74rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .meta-row {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        flex-wrap: wrap;
-        font-size: 0.7rem;
-        color: #8daaa1;
-    }
-    .badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 62px;
-        padding: 7px 8px;
-        border-radius: 999px;
-        font-size: 0.64rem;
-        font-weight: 800;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        border: 1px solid transparent;
-    }
-    .badge.high { background: rgba(255, 85, 71, 0.16); color: #ff9a94; border-color: rgba(255, 85, 71, 0.26); }
-    .badge.medium { background: rgba(255, 174, 73, 0.14); color: #ffce7a; border-color: rgba(255, 174, 73, 0.26); }
-    .badge.low { background: rgba(148, 163, 184, 0.13); color: #d2dae5; border-color: rgba(148, 163, 184, 0.22); }
-    .empty-state {
-        display: none;
-        margin-top: 18px;
-        padding: 18px 16px;
-        text-align: center;
-        border-radius: 18px;
-        background: rgba(19, 31, 27, 0.9);
-        border: 1px solid rgba(255,255,255,0.05);
-        color: #bad2c9;
-        font-size: 0.8rem;
-    }
-    .empty-state.visible { display: block; }
-    .detail-modal {
-        position: fixed;
-        inset: 0;
-        background: rgba(1, 8, 7, 0.7);
-        display: none;
-        align-items: flex-end;
-        justify-content: center;
-        z-index: 100;
-    }
-    .detail-modal.open { display: flex; }
-    .detail-panel {
-        width: min(100%, 480px);
-        max-height: 88vh;
-        overflow-y: auto;
-        border-radius: 26px 26px 0 0;
-        background: #0d1d1b;
-        border: 1px solid rgba(255,255,255,0.08);
-        padding: 18px 18px 28px;
-    }
-    .modal-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 16px;
-    }
-    .modal-title {
-        margin: 0;
-        font-size: 1.1rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-    .close-btn {
-        border: none;
-        background: rgba(255,255,255,0.06);
-        color: #edf5f2;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        font-size: 1.1rem;
-    }
-    .modal-image {
-        width: 100%;
-        height: 200px;
-        border-radius: 20px;
-        object-fit: cover;
-        background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
-        display: block;
-        margin-bottom: 16px;
-    }
-    .detail-photo-empty {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        width: 100%;
-        min-height: 180px;
-        margin-bottom: 16px;
-        border-radius: 20px;
-        border: 1px solid rgba(255,255,255,0.08);
-        background: linear-gradient(135deg, rgba(255, 201, 91, 0.12), rgba(148, 163, 184, 0.08));
-        color: #e6f0ec;
-        text-align: center;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-    }
-    .detail-photo-empty .placeholder-icon {
-        font-size: 1.8rem;
-    }
-    .modal-body {
-        color: #dfece8;
-        font-size: 0.82rem;
-        line-height: 1.6;
-    }
-    .modal-body h4 {
-        margin: 0 0 8px;
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        color: #9cc5b9;
-        letter-spacing: 0.08em;
-    }
-    .modal-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 18px;
-    }
-    .secondary-action {
-        flex: 1;
-        min-height: 42px;
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.08);
-        background: rgba(255,255,255,0.04);
-        color: #edf7f3;
-        font-weight: 700;
-    }
-    .primary-action {
-        flex: 1;
-        min-height: 42px;
-        border-radius: 12px;
-        border: none;
-        background: linear-gradient(135deg, #f7ca4d, #ffb835);
-        color: #0e1a1d;
-        font-weight: 800;
-    }
-    @media (min-width: 540px) {
-        .timeline-page { padding: 18px 16px 24px; }
+    .community-nav a.active { color: #173d2b; }
+    .community-nav-icon { font-size: 1.15rem; line-height: 1; }
+    @media (max-width: 360px) {
+        .hero-title { font-size: 1.48rem; }
+        .snake-illustration { right: -18px; transform: scale(.88) rotate(-13deg); }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="timeline-page">
-    <header class="timeline-topbar" aria-label="Community timeline header">
-        <div class="title-group">
-            <span class="clock-mark" aria-hidden="true">◔</span>
-            <h1 class="timeline-title">Timeline</h1>
+<main class="community-home" aria-label="VenomGuard AI community home">
+    <aside class="healthcare-prompt" aria-label="Healthcare member sign in">
+        <div class="healthcare-prompt-copy">
+            <p class="healthcare-prompt-title">Are you a healthcare member?</p>
+            <p class="healthcare-prompt-text">Sign in or sign up to access your dashboard.</p>
         </div>
+        <a class="healthcare-prompt-link" href="{% url 'snakebite:healthcare_auth' %}">Sign in / Sign up</a>
+    </aside>
+
+    <header class="community-header">
+        <a href="{% url 'snakebite:access' %}" class="header-icon" aria-label="Back to access">‹</a>
+        <a href="{{ venomguard_home_url }}" class="brand-mark" aria-label="VenomGuard AI home">🐍</a>
+        <h1 class="brand-title">VenomGuard AI</h1>
     </header>
 
-    <div class="cta-bar">
-        <div>
-            <div class="cta-copy">Community alerts</div>
+    <section class="hero-card" aria-labelledby="welcome-title">
+        <div class="hero-copy">
+            <p class="eyebrow">Community care</p>
+            <h2 id="welcome-title" class="hero-title">Hello! If someone is bitten by a snake, we can help.</h2>
         </div>
-        <div class="cta-actions">
-            <a class="cta-btn" href="{% url 'snakebite:community_bite_assessment' %}">Start Bite Assessment</a>
-            <a class="cta-btn cta-btn--secondary" href="{% url 'snakebite:first_aid' %}">First Aid Guide</a>
-            <a class="cta-btn cta-btn--secondary" href="{% url 'snakebite:community_nearest_help' %}">Find Nearest Help</a>
-        </div>
-    </div>
+        <div class="snake-illustration" aria-hidden="true">🐍</div>
+        <a class="assessment-button" href="{% url 'snakebite:community_bite_assessment' %}">Start Bite Assessment <span aria-hidden="true">&nbsp;→</span></a>
+    </section>
 
-    {% if not selected_country %}
-        <form method="post" class="country-selector" aria-label="Select your country">
-            {% csrf_token %}
-            <div class="country-selector__label">Your country</div>
-            <div class="country-selector__row">
-                {% for code, label in country_options %}
-                    <button
-                        type="submit"
-                        name="nationality"
-                        value="{{ code }}"
-                        class="country-selector__pill {% if selected_country == code %}selected{% endif %}"
-                        aria-pressed="{% if selected_country == code %}true{% else %}false{% endif %}"
-                    >
-                        <img src="/static/snakebite/flags/{{ code }}.png" alt="{{ label }} flag" class="country-selector__flag">
-                        <span>{{ label }}</span>
-                    </button>
-                {% endfor %}
-            </div>
-        </form>
-    {% endif %}
+    <h2 class="section-heading">Quick access</h2>
+    <nav class="quick-actions" aria-label="Community tools">
+        <a class="quick-action" href="{% url 'snakebite:first_aid' %}">
+            <span class="quick-icon" aria-hidden="true">✚</span>
+            <span class="quick-label">First Aid Guide</span>
+            <span class="quick-arrow" aria-hidden="true">›</span>
+        </a>
+        <a class="quick-action" href="{% url 'snakebite:community_nearest_help' %}">
+            <span class="quick-icon" aria-hidden="true">⌖</span>
+            <span class="quick-label">Find Nearest Help</span>
+            <span class="quick-arrow" aria-hidden="true">›</span>
+        </a>
+    </nav>
 
-    <div class="filter-row" aria-label="Timeline filters">
-        <button class="filter-pill active" type="button" data-filter="{{ selected_country|default:'ghana' }}">{{ selected_country_label|default:'Ghana' }}</button>
-        <button class="filter-pill" type="button" data-filter="global">Global</button>
-    </div>
+    <form method="post" class="language-form" aria-label="Language and country preference">
+        {% csrf_token %}
+        <label class="language-label" for="language-country">Language / region</label>
+        <select id="language-country" name="nationality" class="language-select" onchange="this.form.submit()">
+            {% for code, label in country_options %}
+                <option value="{{ code }}" {% if selected_country == code %}selected{% endif %}>English ({{ label }})</option>
+            {% endfor %}
+        </select>
+    </form>
+</main>
 
-    <div id="timelineList" class="timeline-list" aria-live="polite"></div>
-    <div id="emptyState" class="empty-state">No sightings match this filter right now.</div>
-</div>
-
-<div id="detailModal" class="detail-modal" aria-hidden="true">
-    <div class="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
-        <div class="modal-header">
-            <h2 id="detailTitle" class="modal-title">Incident</h2>
-            <button type="button" class="close-btn" id="closeDetailModal" aria-label="Close">×</button>
-        </div>
-        <img id="detailImage" class="modal-image" alt="Sighting photo" src="" />
-        <div id="detailBody" class="modal-body"></div>
-        <div class="modal-actions">
-            <button type="button" class="secondary-action" id="modalCloseBtn">Close</button>
-            <button type="button" class="primary-action" id="reportSimilarBtn">Report Similar</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    const filterButtons = document.querySelectorAll('.filter-pill');
-    const timelineList = document.getElementById('timelineList');
-    const emptyState = document.getElementById('emptyState');
-    const detailModal = document.getElementById('detailModal');
-    const detailBody = document.getElementById('detailBody');
-    const detailTitle = document.getElementById('detailTitle');
-    const detailImage = document.getElementById('detailImage');
-    const reportSimilarBtn = document.getElementById('reportSimilarBtn');
-
-    function formatTimeLabel(dateString) {
-        if (!dateString) return 'Recently';
-        const date = new Date(dateString);
-        if (Number.isNaN(date.getTime())) return 'Recently';
-        return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-    }
-
-    function formatRelativeTime(dateString) {
-        if (!dateString) return 'just now';
-        const date = new Date(dateString);
-        if (Number.isNaN(date.getTime())) return 'just now';
-        const diffMs = Date.now() - date.getTime();
-        const mins = Math.max(1, Math.round(diffMs / 60000));
-        if (mins < 60) return `${mins}m ago`;
-        const hours = Math.round(mins / 60);
-        if (hours < 24) return `${hours}h ago`;
-        const days = Math.round(hours / 24);
-        return `${days}d ago`;
-    }
-
-    function formatDayHeader(dateString) {
-        const date = new Date(dateString);
-        if (Number.isNaN(date.getTime())) return 'Recent';
-        return date.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase();
-    }
-
-    function getUsablePhotoUrl(value) {
-        if (!value) return '';
-        const normalized = String(value).trim().toLowerCase();
-        if (['', 'null', 'none', 'undefined'].includes(normalized)) return '';
-        return value;
-    }
-
-    function getRiskBadgeClass(level) {
-        const value = (level || 'LOW').toString().toUpperCase();
-        if (value === 'HIGH') return 'high';
-        if (value === 'MEDIUM') return 'medium';
-        return 'low';
-    }
-
-    function buildThumbPlaceholder() {
-        return `
-            <div class="thumb-placeholder" aria-label="No uploaded image yet">
-                <span class="placeholder-icon">🖼️</span>
-                <span class="placeholder-text">No image</span>
-            </div>
-        `;
-    }
-
-    function renderTimeline(items) {
-        if (!items || items.length === 0) {
-            timelineList.innerHTML = '';
-            emptyState.classList.add('visible');
-            return;
-        }
-
-        emptyState.classList.remove('visible');
-        const groups = {};
-        items.forEach((item) => {
-            const sourceDate = item.created_at || item.timestamp || new Date().toISOString();
-            const key = new Date(sourceDate).toISOString().slice(0, 10);
-            if (!groups[key]) groups[key] = [];
-            groups[key].push(item);
-        });
-
-        const sortedDates = Object.keys(groups).sort((a, b) => new Date(b) - new Date(a));
-        timelineList.innerHTML = sortedDates.map((dateKey) => {
-            const dateItems = groups[dateKey].sort((a, b) => new Date(b.created_at || b.timestamp) - new Date(a.created_at || a.timestamp));
-            const dayHeader = formatDayHeader(dateItems[0].created_at || dateItems[0].timestamp);
-            const cards = dateItems.map((item) => {
-                const riskLevel = item.risk_level || 'LOW';
-                const photoUrl = getUsablePhotoUrl(item.photo_url);
-                return `
-                    <article class="sighting-card" data-id="${item.id}" tabindex="0" aria-label="Open sighting details for ${item.headline || item.snake_name}">
-                        <div class="thumb">
-                            ${photoUrl ? `<img src="${photoUrl}" alt="${(item.headline || item.snake_name || 'Sighting').replace(/"/g, '&quot;')}">` : buildThumbPlaceholder()}
-                        </div>
-                        <div class="card-body">
-                            <h3 class="headline">${(item.headline || item.snake_name || 'Unidentified Snake').slice(0, 30)}</h3>
-                            <p class="subtitle">${item.snake_name || 'Unknown species'} · ${item.location || 'Unknown area'}</p>
-                            <div class="meta-row">
-                                <span>${formatTimeLabel(item.created_at || item.timestamp)}</span>
-                                <span>•</span>
-                                <span>${formatRelativeTime(item.created_at || item.timestamp)}</span>
-                            </div>
-                        </div>
-                        <span class="badge ${getRiskBadgeClass(riskLevel)}">${riskLevel}</span>
-                    </article>
-                `;
-            }).join('');
-            return `
-                <div class="date-group">
-                    <div class="day-header">${dayHeader}</div>
-                    ${cards}
-                </div>
-            `;
-        }).join('');
-
-        document.querySelectorAll('.sighting-card .thumb img').forEach((img) => {
-            img.addEventListener('error', () => {
-                const thumb = img.closest('.thumb');
-                if (thumb) {
-                    thumb.innerHTML = buildThumbPlaceholder();
-                }
-            });
-        });
-
-        document.querySelectorAll('.sighting-card').forEach((card) => {
-            const openCard = () => {
-                const id = card.dataset.id;
-                fetch(`/venomguard/api/sighting/${id}/`)
-                    .then((response) => response.json())
-                    .then((data) => {
-                        if (data.error) return;
-                        const photoUrl = getUsablePhotoUrl(data.photo_url);
-                        detailTitle.textContent = data.headline || data.snake_name || 'Incident';
-                        detailImage.src = photoUrl || '';
-                        detailImage.style.display = photoUrl ? 'block' : 'none';
-                        detailImage.onerror = () => {
-                            detailImage.style.display = 'none';
-                            const placeholder = document.createElement('div');
-                            placeholder.className = 'detail-photo-empty';
-                            placeholder.setAttribute('aria-label', 'No uploaded image yet');
-                            placeholder.innerHTML = '<span class="placeholder-icon">🖼️</span><span>No image uploaded yet</span>';
-                            if (detailImage.parentNode && detailImage.parentNode.querySelector('.detail-photo-empty') === null) {
-                                detailImage.parentNode.insertBefore(placeholder, detailImage.nextSibling);
-                            }
-                        };
-                        detailBody.innerHTML = `
-                            ${photoUrl ? '' : `
-                                <div class="detail-photo-empty" aria-label="No uploaded image yet">
-                                    <span class="placeholder-icon">🖼️</span>
-                                    <span>No image uploaded yet</span>
-                                </div>
-                            `}
-                            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px;">
-                                <div>
-                                    <h4>Species</h4>
-                                    <div>${data.snake_name || 'Unidentified Snake'}</div>
-                                </div>
-                                <span class="badge ${getRiskBadgeClass(data.risk_level || 'LOW')}">${data.risk_level || 'LOW'}</span>
-                            </div>
-                            <div style="margin-bottom:12px;">
-                                <h4>Location</h4>
-                                <div>${data.location || 'Unknown location'}</div>
-                            </div>
-                            <div style="margin-bottom:12px;">
-                                <h4>Reported</h4>
-                                <div>${formatTimeLabel(data.created_at || data.timestamp)} · ${formatRelativeTime(data.created_at || data.timestamp)}</div>
-                            </div>
-                            <div>
-                                <h4>Details</h4>
-                                <div>${data.description || 'No additional details available.'}</div>
-                            </div>
-                        `;
-                        detailModal.classList.add('open');
-                        detailModal.setAttribute('aria-hidden', 'false');
-                        reportSimilarBtn.dataset.id = data.id;
-                    })
-                    .catch(() => {
-                        detailBody.innerHTML = '<div>Unable to load incident details.</div>';
-                        detailModal.classList.add('open');
-                    });
-            };
-            card.addEventListener('click', openCard);
-            card.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    openCard();
-                }
-            });
-        });
-    }
-
-    function closeModal() {
-        detailModal.classList.remove('open');
-        detailModal.setAttribute('aria-hidden', 'true');
-    }
-
-    function getDefaultLocation() {
-        return { latitude: 5.6037, longitude: -0.1870 };
-    }
-
-    function getStoredLocation() {
-        try {
-            const raw = localStorage.getItem('venomguard_last_location');
-            if (!raw) return null;
-            const parsed = JSON.parse(raw);
-            if (parsed && typeof parsed.latitude === 'number' && typeof parsed.longitude === 'number') {
-                return { latitude: parsed.latitude, longitude: parsed.longitude };
-            }
-        } catch (error) {
-            return null;
-        }
-        return null;
-    }
-
-    function resolveNearbyCoordinates(callback) {
-        const storedLocation = getStoredLocation() || getDefaultLocation();
-
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                const coords = {
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude
-                };
-                localStorage.setItem('venomguard_last_location', JSON.stringify(coords));
-                callback(coords);
-            }, () => {
-                callback(storedLocation);
-            }, {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 60000
-            });
-            return;
-        }
-
-        callback(storedLocation);
-    }
-
-    function fetchSightings(filterName) {
-        const selectedCountry = '{{ selected_country|default:"ghana" }}';
-        const normalizedFilter = filterName === 'nearby' ? selectedCountry : (filterName || selectedCountry);
-        const params = new URLSearchParams({ filter: normalizedFilter });
-        const fetchUrl = `/venomguard/api/sightings/?${params.toString()}`;
-        requestSightings(fetchUrl);
-    }
-
-    function requestSightings(fetchUrl) {
-        fetch(fetchUrl)
-            .then((response) => response.json())
-            .then((payload) => {
-                const items = payload.results || [];
-                renderTimeline(items);
-            })
-            .catch(() => {
-                emptyState.classList.add('visible');
-                timelineList.innerHTML = '';
-            });
-    }
-
-    filterButtons.forEach((button) => {
-        button.addEventListener('click', () => {
-            filterButtons.forEach((item) => item.classList.toggle('active', item === button));
-            fetchSightings(button.dataset.filter);
-        });
-    });
-
-    document.getElementById('closeDetailModal').addEventListener('click', closeModal);
-    document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
-    detailModal.addEventListener('click', (event) => {
-        if (event.target === detailModal) closeModal();
-    });
-
-    reportSimilarBtn.addEventListener('click', () => {
-        const id = reportSimilarBtn.dataset.id;
-        if (id) {
-            window.location.href = `/venomguard/report-sighting/?similar_to=${id}`;
-        }
-    });
-
-    fetchSightings('{{ selected_country|default:"ghana" }}');
-</script>
+<nav class="community-nav" aria-label="Community navigation">
+    <a href="{% url 'snakebite:community_home' %}" class="active" aria-current="page">
+        <span class="community-nav-icon" aria-hidden="true">⌂</span><span>Home</span>
+    </a>
+    <a href="{% url 'snakebite:education_training' %}">
+        <span class="community-nav-icon" aria-hidden="true">▣</span><span>Learn</span>
+    </a>
+    <a href="{% url 'snakebite:community_nearest_help' %}">
+        <span class="community-nav-icon" aria-hidden="true">♡</span><span>Alerts</span>
+    </a>
+    <a href="{% url 'snakebite:settings' %}">
+        <span class="community-nav-icon" aria-hidden="true">●</span><span>Profile</span>
+    </a>
+</nav>
 {% endblock %}

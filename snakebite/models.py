@@ -3,6 +3,19 @@ from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.text import slugify
+from django.conf import settings
+
+
+class HealthcareMemberProfile(models.Model):
+	user = models.OneToOneField(
+		settings.AUTH_USER_MODEL,
+		on_delete=models.CASCADE,
+		related_name='healthcare_profile',
+	)
+	occupation = models.CharField(max_length=150)
+
+	def __str__(self):
+		return f'{self.user.username} - {self.occupation}'
 
 
 class Region(models.Model):
@@ -128,6 +141,7 @@ class PatientAssessment(models.Model):
 		on_delete=models.PROTECT,
 		related_name="patient_assessments",
 	)
+	location = models.CharField(max_length=150, blank=True)
 	patient_age_group = models.CharField(max_length=50)
 	symptoms_present = models.ManyToManyField(Symptom, related_name="patient_assessments", blank=True)
 	severity_score = models.PositiveSmallIntegerField(default=0, editable=False)
@@ -140,6 +154,7 @@ class PatientAssessment(models.Model):
 	)
 	risk_level = models.CharField(max_length=10, choices=RiskLevel.choices, default=RiskLevel.LOW)
 	recommended_action = models.TextField(blank=True)
+	comments = models.TextField(blank=True)
 
 	class Meta:
 		ordering = ["-timestamp"]

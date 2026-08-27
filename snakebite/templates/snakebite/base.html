@@ -319,8 +319,10 @@
     <header class="topbar">
         <div class="topbar-inner">
             <div style="display:flex; align-items:center; gap:10px;">
-                <span class="brand-mark">V</span>
-                <span class="brand">VenomGuardAI</span>
+                <a href="{{ venomguard_home_url }}" aria-label="VenomGuardAI home">
+                    <span class="brand-mark">V</span>
+                    <span class="brand">VenomGuardAI</span>
+                </a>
             </div>
             <span class="pill">{% if venomguard_member_type_label %}{{ venomguard_member_type_label }}{% else %}Member{% endif %}</span>
         </div>

@@ -15,6 +15,7 @@ app_name = 'snakebite'
 
 urlpatterns = [
 	path('access/', views.access_view, name='access'),
+	path('healthcare-auth/', views.healthcare_auth_view, name='healthcare_auth'),
 	path('', views.home_view, name='home'),
 	path('chw-dashboard/', views.chw_home_view, name='chw_home'),
 	path('api/sightings/', views.get_sightings_api, name='sightings_api'),
@@ -26,6 +27,7 @@ urlpatterns = [
 	path('community-bite-assessment/', views.community_bite_assessment_view, name='community_bite_assessment'),
 	path('community-risk-result/', views.community_risk_result_view, name='community_risk_result'),
 	path('community-nearest-help/', views.community_nearest_help_view, name='community_nearest_help'),
+	path('community-get-help/', views.community_get_help_view, name='community_get_help'),
 	path('case-details/<int:pk>/', views.CaseDetailsView.as_view(), name='case_details'),
 	path('case/<int:pk>/send-referral/', views.SendReferralView.as_view(), name='send_referral'),
 	path('dashboard/', views.CHWDashboardView.as_view(), name='chw_dashboard'),
