@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0f17">
+  <title>VenomGuard AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <style>
+    @keyframes breathe {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-7px) rotate(2deg); }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .logo-breathe { animation: breathe 4s ease-in-out infinite; }
+    .progress-shimmer {
+      background: linear-gradient(90deg, #d97706, #fbbf24, #f59e0b, #d97706);
+      background-size: 200% 100%;
+      animation: shimmer 2.5s linear infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .logo-breathe, .progress-shimmer { animation: none; }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#0b0f17] text-white">
+  <div id="splash-root"></div>
+  <script>
+    const { useEffect, useState } = React;
+
+    function SnakeSpotSplash() {
+      const [progress, setProgress] = useState(21);
+
+      useEffect(() => {
+        const timer = window.setInterval(() => {
+          setProgress((current) => {
+            if (current >= 100) {
+              window.clearInterval(timer);
+              return 100;
+            }
+            return Math.min(current + 1, 100);
+          });
+        }, 180);
+        return () => window.clearInterval(timer);
+      }, []);
+
+      useEffect(() => {
+        if (progress < 100) {
+          return undefined;
+        }
+        const redirectTimer = window.setTimeout(() => {
+          window.location.href = '/venomguard/access/';
+        }, 700);
+        return () => window.clearTimeout(redirectTimer);
+      }, [progress]);
+
+      return React.createElement(
+        'main',
+        { className: 'relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-12' },
+        React.createElement('div', { className: 'pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(245,158,11,0.09),transparent_30%)]' }),
+        React.createElement(
+          'div',
+          { className: 'relative flex w-full max-w-sm flex-col items-center text-center' },
+          React.createElement(
+            'div',
+            { className: 'logo-breathe relative mb-8 flex h-32 w-32 items-center justify-center', 'aria-label': 'VenomGuard AI emblem' },
+            React.createElement('div', { className: 'absolute inset-1 rounded-[2.25rem] border border-amber-400/20 bg-slate-900 shadow-[0_20px_55px_rgba(0,0,0,0.4)] rotate-6' }),
+            React.createElement('div', { className: 'absolute inset-3 rounded-[2rem] border border-amber-400/40 bg-gradient-to-br from-amber-400/20 to-slate-900 -rotate-6' }),
+            React.createElement('div', { className: 'relative flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-950 text-5xl shadow-inner shadow-amber-400/20' }, '🐍'),
+            React.createElement('span', { className: 'absolute -right-1 top-2 h-3 w-3 rounded-full bg-amber-400 shadow-[0_0_16px_#f59e0b]' })
+          ),
+          React.createElement(
+            'h1',
+            { className: 'text-4xl font-bold tracking-tight text-white' },
+            'VenomGuard ', React.createElement('span', { className: 'text-amber-500' }, 'AI')
+          ),
+          React.createElement('p', { className: 'mt-4 text-xs font-bold uppercase tracking-[0.22em] text-amber-400' }, 'Predictive modeling for localized snakebite care'),
+          React.createElement(
+            'div',
+            { className: 'mt-8 space-y-3 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400' },
+            React.createElement('p', null, 'To improve snakebite management across supported countries'),
+            React.createElement('p', null, 'Local risk prediction & hazard mapping'),
+            React.createElement('p', null, 'Instant antivenom locator & first aid guidance')
+          ),
+          React.createElement(
+            'section',
+            { className: 'mt-14 w-full', 'aria-label': 'Loading predictive model' },
+            React.createElement(
+              'div',
+              { className: 'h-2 w-full overflow-hidden rounded-full bg-slate-800', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': progress },
+              React.createElement('div', { className: 'progress-shimmer h-full rounded-full transition-[width] duration-300 ease-out', style: { width: `${progress}%` } })
+            ),
+            React.createElement('p', { className: 'mt-4 text-2xl font-semibold tabular-nums text-amber-400' }, `${progress}%`),
+            React.createElement('p', { className: 'mt-2 text-xs text-slate-500' }, 'Loading predictive model & regional data...')
+          )
+        )
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('splash-root')).render(React.createElement(SnakeSpotSplash));
+  </script>
+</body>
+</html>

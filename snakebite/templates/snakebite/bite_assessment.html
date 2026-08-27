@@ -144,6 +144,15 @@
         font-size: 1.6rem;
         flex-shrink: 0;
     }
+    .choice-card .snake-photo {
+        width: 74px;
+        height: 58px;
+        flex-shrink: 0;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 1px solid rgba(255, 215, 120, 0.3);
+        background: rgba(255,255,255,0.08);
+    }
     .choice-text strong {
         display: block;
         font-size: 1rem;
@@ -198,7 +207,7 @@
         </div>
     </header>
 
-    <form method="post" class="assessment-card">
+    <form method="post" action="{% url 'snakebite:community_bite_assessment' %}?step={{ current_step|default:1 }}" class="assessment-card">
         {% csrf_token %}
         <input type="hidden" name="step" value="{{ current_step|default:1 }}" />
         <div class="progress" aria-label="Assessment progress">
@@ -214,30 +223,19 @@
             <h2>What type of snake bit the person?</h2>
             <div class="section-copy">Snake type</div>
             <div class="choice-grid">
-                <label class="choice-card" for="snake_viper">
-                    <input id="snake_viper" type="radio" name="snake_type" value="viper" {% if selected_snake == 'viper' or selected_snake == 'unknown' %}checked{% endif %}>
-                    <span class="icon" aria-hidden="true">🐍</span>
-                    <span class="choice-text"><strong>Viper</strong><span>Short, thick body</span></span>
+                {% for snake in snake_image_options %}
+                <label class="choice-card" for="snake_{{ forloop.counter }}">
+                    <input id="snake_{{ forloop.counter }}" type="radio" name="snake_type" value="{{ snake.category }}" {% if snake.is_selected %}checked{% endif %}>
+                    <img class="snake-photo" src="{% static snake.image_url %}" alt="{{ snake.label }}">
+                    <span class="choice-text"><strong>{{ snake.label }}</strong></span>
                 </label>
-                <label class="choice-card" for="snake_cobra">
-                    <input id="snake_cobra" type="radio" name="snake_type" value="cobra" {% if selected_snake == 'cobra' %}checked{% endif %}>
-                    <span class="icon" aria-hidden="true">🩺</span>
-                    <span class="choice-text"><strong>Cobra</strong><span>Spread hood</span></span>
-                </label>
-                <label class="choice-card" for="snake_mamba">
-                    <input id="snake_mamba" type="radio" name="snake_type" value="mamba" {% if selected_snake == 'mamba' %}checked{% endif %}>
-                    <span class="icon" aria-hidden="true">🌿</span>
-                    <span class="choice-text"><strong>Mamba</strong><span>Long, slender</span></span>
-                </label>
-                <label class="choice-card" for="snake_other">
-                    <input id="snake_other" type="radio" name="snake_type" value="other" {% if selected_snake == 'other' %}checked{% endif %}>
-                    <span class="icon" aria-hidden="true">❓</span>
-                    <span class="choice-text"><strong>Other / Don’t know</strong><span>Unsure of the snake type</span></span>
-                </label>
+                {% empty %}
+                <p class="section-copy">No snake images are available for this country.</p>
+                {% endfor %}
             </div>
-        {% else %}
+        {% elif current_step == 2 %}
             <h2>What symptoms are present?</h2>
-            <div class="section-copy">Symptoms</div>
+            <div class="section-copy">Symptoms (optional)</div>
             <div class="symptom-grid">
                 {% for symptom in symptoms %}
                 <label class="symptom-option">
@@ -245,13 +243,36 @@
                     <span>{{ symptom.name }}</span>
                 </label>
                 {% empty %}
-                <label class="symptom-option"><input type="checkbox" name="symptoms" value="swelling" checked><span>Swelling</span></label>
+                <label class="symptom-option"><input type="checkbox" name="symptoms" value="swelling"><span>Swelling</span></label>
                 <label class="symptom-option"><input type="checkbox" name="symptoms" value="bleeding-gums"><span>Bleeding gums</span></label>
                 {% endfor %}
             </div>
+        {% elif current_step == 3 %}
+            <h2>When did the bite happen?</h2>
+            <div class="section-copy">Timing (optional)</div>
+            <div class="choice-grid">
+                <label class="choice-card"><input type="radio" name="bite_time" value="just_now"><span class="icon" aria-hidden="true">◷</span><span class="choice-text"><strong>Just now</strong><span>Within the last hour</span></span></label>
+                <label class="choice-card"><input type="radio" name="bite_time" value="earlier_today"><span class="icon" aria-hidden="true">◴</span><span class="choice-text"><strong>Earlier today</strong><span>Several hours ago</span></span></label>
+                <label class="choice-card"><input type="radio" name="bite_time" value="past_week"><span class="icon" aria-hidden="true">◴</span><span class="choice-text"><strong>More than a day ago</strong><span>The bite happened earlier</span></span></label>
+            </div>
+        {% else %}
+            <h2>Where did the bite happen?</h2>
+            <div class="section-copy">Location and patient details (optional)</div>
+            <label class="section-copy" for="assessment-location">Location</label>
+            <input id="assessment-location" class="field" type="text" name="location" value="{{ assessment_data.location|default:selected_country_label }}" placeholder="City, town, or region">
+            <label class="section-copy" for="patient-age-group">Patient age group</label>
+            <select id="patient-age-group" class="field" name="patient_age_group">
+                <option value="adult" {% if assessment_data.patient_age_group == 'adult' %}selected{% endif %}>Adult</option>
+                <option value="child" {% if assessment_data.patient_age_group == 'child' %}selected{% endif %}>Child</option>
+                <option value="infant" {% if assessment_data.patient_age_group == 'infant' %}selected{% endif %}>Infant</option>
+            </select>
+            <label class="section-copy" for="assessment-comments">Additional comments</label>
+            <textarea id="assessment-comments" class="field" name="comments" rows="4" placeholder="Add any other details that may help with the assessment.">{{ assessment_data.comments|default:'' }}</textarea>
         {% endif %}
 
-        <input type="hidden" name="location" value="{{ selected_country_label|default:'Ghana' }}">
+        {% if current_step != 4 %}
+            <input type="hidden" name="location" value="{{ selected_country_label|default:'Ghana' }}">
+        {% endif %}
 
         <div class="footer">
             <a class="secondary-btn" href="{% if current_step == 1 %}{% url 'snakebite:community_home' %}{% else %}{% url 'snakebite:community_bite_assessment' %}?step=1{% endif %}">Back</a>
