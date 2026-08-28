@@ -6,71 +6,9 @@
             <h2 class="section-title">Settings</h2>
         </div>
 
-        <div class="card" style="margin-bottom: 14px;">
-            <div class="muted" style="margin-bottom: 8px;">Profile</div>
-            <div style="display:grid; gap:6px;">
-                <div><strong>Member type:</strong> {{ member_type|title }}</div>
-                <div><strong>Nationality:</strong> {{ nationality|title }}</div>
-                <div><strong>Access:</strong> {% if access_granted %}Active{% else %}Not granted{% endif %}</div>
-            </div>
-        </div>
-
         <form method="post">
             {% csrf_token %}
-            <div class="card" style="margin-bottom: 14px;">
-                <label class="muted" for="nationality">Country</label>
-                <select id="nationality" name="nationality" class="field">
-                    {% for code, label in nationality_options %}
-                        <option value="{{ code }}" {% if nationality == code %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="card" style="margin-bottom: 14px;">
-                <label class="muted" for="member_type">Member type</label>
-                <select id="member_type" name="member_type" class="field">
-                    {% for code, label in member_type_options %}
-                        <option value="{{ code }}" {% if member_type == code %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="card" style="margin-bottom: 14px;">
-                <label class="muted" for="language">Language</label>
-                <select id="language" name="language" class="field">
-                    <option value="English" {% if language == 'English' %}selected{% endif %}>English</option>
-                    <option value="French" {% if language == 'French' %}selected{% endif %}>French</option>
-                    <option value="Swahili" {% if language == 'Swahili' %}selected{% endif %}>Swahili</option>
-                </select>
-            </div>
-
-            <div class="card" style="margin-bottom: 14px;">
-                <button type="submit" class="primary-btn" style="width:100%;">Save profile</button>
-            </div>
-
-            <div class="card" style="margin-bottom: 14px;">
-                <label class="muted" for="alert_radius">Alert radius</label>
-                <select id="alert_radius" name="alert_radius" class="field">
-                    <option value="500m" {% if alert_radius == '500m' %}selected{% endif %}>500m</option>
-                    <option value="1km" {% if alert_radius == '1km' %}selected{% endif %}>1km</option>
-                    <option value="5km" {% if alert_radius == '5km' %}selected{% endif %}>5km</option>
-                    <option value="10km" {% if alert_radius == '10km' %}selected{% endif %}>10km</option>
-                </select>
-            </div>
-
-            <div class="card" style="margin-bottom: 14px;">
-                <div class="section-header" style="margin-bottom: 8px;">
-                    <span class="muted">Emergency</span>
-                </div>
-                <a href="tel:{{ emergency_number }}" class="danger-btn" style="width:100%;">Call {{ emergency_number }} (Ghana)</a>
-            </div>
-
-            <div class="card" style="margin-bottom: 14px;">
-                <div class="section-header" style="margin-bottom: 8px;">
-                    <span class="muted">Session</span>
-                </div>
-                <button type="submit" name="reset_access" value="1" class="secondary-btn" style="width:100%;">Reset access / sign out</button>
-            </div>
+            <button type="submit" name="reset_access" value="1" class="danger-btn" style="width:100%;">Sign out</button>
         </form>
     </div>
 {% endblock %}

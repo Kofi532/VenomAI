@@ -4,7 +4,7 @@ from hmac import compare_digest
 from pathlib import Path
 from urllib.parse import urlencode
 
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db import transaction
@@ -285,7 +285,7 @@ def _persist_assessment_from_session(request):
 			risk_level=assessment.risk_level,
 			status=PatientCase.Status.OPEN,
 			clinical_notes=assessment.comments or assessment.recommended_action,
-			member_type='community',
+			member_type=_resolve_member_type(request),
 		)
 		assessment_session['case_id'] = case.pk
 	request.session[SNAKEBITE_ASSESSMENT_SESSION_KEY] = assessment_session
@@ -395,43 +395,33 @@ def access_view(request):
 	change_profile_requested = (request.GET.get('change_profile') or request.POST.get('change_profile')) == '1'
 	password_verified = bool(request.session.get(SNAKEBITE_PASSWORD_VERIFIED_SESSION_KEY))
 	access_granted = bool(request.session.get(SNAKEBITE_ACCESS_SESSION_KEY))
-	can_edit_profile = password_verified or (access_granted and change_profile_requested)
-	show_profile_form = request.GET.get('step') == 'profile' and can_edit_profile
+	can_edit_profile = True
+	show_profile_form = True
 
 	if request.method == 'GET' and access_granted and not change_profile_requested and request.GET.get('step') != 'profile' and not reset_access:
 		return redirect(next_url)
-
-	if request.method == 'GET' and password_verified and request.GET.get('step') != 'profile':
-		return redirect(f"{reverse('snakebite:access')}?{urlencode({'next': next_url, 'step': 'profile'})}")
 
 	nationality_values = {value for value, _ in SNAKEBITE_NATIONALITY_OPTIONS}
 	error_message = ''
 	selected_nationality = request.session.get(SNAKEBITE_NATIONALITY_SESSION_KEY, '')
 	if request.method == 'POST':
-		action = request.POST.get('action', 'password')
+		action = request.POST.get('action', 'profile')
 
-		if action == 'password':
-			password_input = request.POST.get('password', '')
-			expected_password = 'Dr.EricNyarko'
-			if not compare_digest(password_input, expected_password):
-				error_message = 'Incorrect password. Please try again.'
+		if action == 'profile':
+			selected_nationality = request.POST.get('nationality', '').strip().lower()
+			requested_member_type = (request.POST.get('member_type') or request.session.get(SNAKEBITE_MEMBER_TYPE_SESSION_KEY) or 'community').strip().lower()
+			if requested_member_type not in {code for code, _ in SNAKEBITE_MEMBER_TYPE_OPTIONS}:
+				requested_member_type = 'community'
+			if selected_nationality not in nationality_values:
+				error_message = 'Please select your nationality to continue.'
 			else:
-				request.session[SNAKEBITE_PASSWORD_VERIFIED_SESSION_KEY] = True
-				return redirect(f"{reverse('snakebite:access')}?{urlencode({'next': next_url, 'step': 'profile'})}")
-
-		elif action == 'profile':
-			if not can_edit_profile:
-				error_message = 'Please confirm your password first.'
-			else:
-				selected_nationality = request.POST.get('nationality', '').strip().lower()
-				if selected_nationality not in nationality_values:
-					error_message = 'Please select your nationality to continue.'
-				else:
-					request.session[SNAKEBITE_ACCESS_SESSION_KEY] = True
-					request.session[SNAKEBITE_NATIONALITY_SESSION_KEY] = selected_nationality
-					request.session[SNAKEBITE_MEMBER_TYPE_SESSION_KEY] = 'community'
-					request.session.pop(SNAKEBITE_PASSWORD_VERIFIED_SESSION_KEY, None)
-					return redirect(reverse('snakebite:community_home'))
+				request.session[SNAKEBITE_ACCESS_SESSION_KEY] = True
+				request.session[SNAKEBITE_NATIONALITY_SESSION_KEY] = selected_nationality
+				request.session[SNAKEBITE_MEMBER_TYPE_SESSION_KEY] = requested_member_type
+				request.session.pop(SNAKEBITE_PASSWORD_VERIFIED_SESSION_KEY, None)
+				if requested_member_type == 'healthcare':
+					return redirect(reverse('snakebite:chw_home'))
+				return redirect(reverse('snakebite:community_home'))
 		else:
 			error_message = 'Invalid request. Please try again.'
 
@@ -700,6 +690,7 @@ def community_home_view(request):
 def community_bite_assessment_view(request):
 	selected_country = (request.session.get(SNAKEBITE_NATIONALITY_SESSION_KEY) or 'ghana').strip().lower()
 	country_label = dict(SNAKEBITE_NATIONALITY_OPTIONS).get(selected_country, 'Ghana')
+	is_healthcare_assessment = _resolve_member_type(request) == 'healthcare'
 	symptoms = list(Symptom.objects.order_by('body_system', 'name'))
 	assessment_data = request.session.get(SNAKEBITE_ASSESSMENT_SESSION_KEY, {})
 	if not isinstance(assessment_data, dict):
@@ -761,6 +752,7 @@ def community_bite_assessment_view(request):
 			'assessment_data': assessment_data,
 			'snake_image_options': get_country_snake_image_options(selected_country, assessment_data.get('snake_type', 'viper')),
 			'current_step': current_step,
+			'is_healthcare_assessment': is_healthcare_assessment,
 		},
 	)
 
@@ -816,6 +808,8 @@ def community_nearest_help_view(request):
 			'facility_name': 'National Health Facility',
 			'facility_type': 'Referral Center',
 			'region': {'name': country_label},
+			'latitude': country_coordinates['latitude'],
+			'longitude': country_coordinates['longitude'],
 			'antivenom_cost_ghs': 'Available on request',
 			'contact_phone': emergency_number,
 			'distance_km': 0,
@@ -841,7 +835,43 @@ def community_nearest_help_view(request):
 
 @snakebite_password_required
 def community_get_help_view(request):
-	return render(request, 'snakebite/community_get_help.html')
+	facilities_payload = _demo_facility_payload()
+	selected_facility_id = request.GET.get('facility')
+	selected_facility = next((facility for facility in facilities_payload if str(facility['id']) == str(selected_facility_id)), None)
+	return render(
+		request,
+		'snakebite/community_get_help.html',
+		{
+			'facilities_payload': facilities_payload,
+			'selected_facility': selected_facility,
+			'current_step': 4,
+		},
+	)
+
+
+@snakebite_password_required
+def community_help_request_view(request, facility_id):
+	facilities_payload = _demo_facility_payload()
+	facility = next((item for item in facilities_payload if str(item['id']) == str(facility_id)), None)
+	if facility is None:
+		facility = {
+			'id': facility_id,
+			'name': 'Nearest Help Facility',
+			'facility_type': 'Emergency Support',
+			'region': 'Your area',
+			'latitude': 5.6037,
+			'longitude': -0.1870,
+			'contact_number': '112',
+			'antivenom_available': True,
+			'antivenom_cost': 250.0,
+		}
+	return render(
+		request,
+		'snakebite/community_help_request.html',
+		{
+			'facility': facility,
+		},
+	)
 
 
 @snakebite_password_required
@@ -1413,6 +1443,16 @@ def identify_symptoms_view(request):
 def snakes_in_area_view(request):
 	regions = Region.objects.order_by('name')
 	active_region_id = request.GET.get('region_id')
+	selected_country = (request.session.get(SNAKEBITE_NATIONALITY_SESSION_KEY) or 'ghana').strip().lower()
+	country_folder_names = {
+		'ghana': 'Ghana',
+		'kenya': 'Kenya',
+		'malawi': 'malawi',
+		'nigeria': 'Nigeria',
+		'zambia': 'Zambia',
+	}
+	image_root = Path(__file__).resolve().parent.parent / 'snakes_pics'
+	preferred_folder = country_folder_names.get(selected_country, 'Ghana')
 
 	if not active_region_id and request.user.is_authenticated:
 		if getattr(request.user, 'region_id', None):
@@ -1436,6 +1476,55 @@ def snakes_in_area_view(request):
 	if selected_snake_id:
 		selected_snake = snakes.filter(id=selected_snake_id).first()
 
+	def snake_photo_url(snake):
+		if snake.image:
+			return snake.image.url
+		search_terms = set((snake.common_name + ' ' + snake.scientific_name).lower().replace('(', '').replace(')', '').split())
+		folders = [image_root / preferred_folder] + [
+			image_root / folder_name for folder_name in country_folder_names.values() if folder_name != preferred_folder
+		]
+		best_match = None
+		best_score = 0
+		for folder in folders:
+			if not folder.is_dir():
+				continue
+			for image_path in sorted(folder.iterdir(), key=lambda path: path.name.lower()):
+				if image_path.suffix.lower() not in {'.jpg', '.jpeg', '.png', '.webp'}:
+					continue
+				filename_terms = set(image_path.stem.lower().replace('(', '').replace(')', '').replace('_', ' ').split())
+				score = len(search_terms & filename_terms)
+				if score > best_score:
+					best_match = image_path
+					best_score = score
+			if best_score >= 2:
+				break
+		if best_match is not None:
+			folder_name = best_match.parent.name
+			return f'{folder_name}/{best_match.name}'
+		return ''
+
+	for snake in snakes:
+		snake.photo_url = snake_photo_url(snake)
+		snake.venom_type_label = snake.get_venom_type_display()
+
+	if not snakes.exists():
+		local_snakes = []
+		catalog_folder = image_root / preferred_folder
+		for image_path in sorted(catalog_folder.glob('*'), key=lambda path: path.name.lower()):
+			if image_path.suffix.lower() not in {'.jpg', '.jpeg', '.png', '.webp'}:
+				continue
+			label = image_path.stem.rsplit('_', 1)[0]
+			common_name, _, scientific_name = label.partition(' (')
+			name = common_name.lower()
+			venom_type_label = 'Neurotoxic' if any(term in name for term in ('cobra', 'mamba')) else 'Hemotoxic' if any(term in name for term in ('viper', 'adder', 'stiletto')) else 'Other'
+			local_snakes.append({
+				'common_name': common_name,
+				'scientific_name': scientific_name.rstrip(')'),
+				'venom_type_label': venom_type_label,
+				'photo_url': f'{preferred_folder}/{image_path.name}',
+			})
+		snakes = local_snakes
+
 	return render(
 		request,
 		'snakebite/snakes_in_area.html',
@@ -1445,6 +1534,7 @@ def snakes_in_area_view(request):
 			'active_region': active_region,
 			'snakes': snakes,
 			'selected_snake': selected_snake,
+			'country_label': dict(SNAKEBITE_NATIONALITY_OPTIONS).get(selected_country, 'Ghana'),
 		},
 	)
 
@@ -1508,6 +1598,72 @@ def education_training_view(request):
 	)
 
 
+
+def _demo_facility_payload():
+	return [
+		{
+			'id': 'demo-koforidua', 'name': 'Koforidua Regional Hospital',
+			'facility_type': 'Regional Hospital', 'region': 'Eastern Region',
+			'latitude': 6.0941, 'longitude': -0.2606, 'antivenom_available': True,
+			'antivenom_cost': 300.0, 'contact_number': '030 222 2222',
+		},
+		{
+			'id': 'demo-kumasi', 'name': 'Komfo Anokye Teaching Hospital',
+			'facility_type': 'Teaching Hospital', 'region': 'Ashanti Region',
+			'latitude': 6.6885, 'longitude': -1.6244, 'antivenom_available': False,
+			'antivenom_cost': None, 'contact_number': '032 202 2301',
+		},
+		{
+			'id': 'demo-accra', 'name': 'Korle Bu Teaching Hospital',
+			'facility_type': 'Teaching Hospital', 'region': 'Greater Accra',
+			'latitude': 5.5502, 'longitude': -0.1966, 'antivenom_available': True,
+			'antivenom_cost': 450.0, 'contact_number': '030 266 5401',
+		},
+		{
+			'id': 'demo-tamale', 'name': 'Tamale Teaching Hospital',
+			'facility_type': 'Teaching Hospital', 'region': 'Northern Region',
+			'latitude': 9.4075, 'longitude': -0.8533, 'antivenom_available': True,
+			'antivenom_cost': 380.0, 'contact_number': '037 202 8333',
+		},
+		{
+			'id': 'demo-sunyani', 'name': 'Sunyani Regional Hospital',
+			'facility_type': 'Regional Hospital', 'region': 'Bono Region',
+			'latitude': 7.3349, 'longitude': -2.3123, 'antivenom_available': False,
+			'antivenom_cost': None, 'contact_number': '035 202 2241',
+		},
+		{
+			'id': 'demo-ho', 'name': 'Ho Teaching Hospital',
+			'facility_type': 'Teaching Hospital', 'region': 'Volta Region',
+			'latitude': 6.6119, 'longitude': 0.4713, 'antivenom_available': True,
+			'antivenom_cost': 275.0, 'contact_number': '036 202 2333',
+		},
+		{
+			'id': 'demo-wa', 'name': 'Wa Municipal Hospital',
+			'facility_type': 'Municipal Hospital', 'region': 'Upper West Region',
+			'latitude': 10.0601, 'longitude': -2.5019, 'antivenom_available': False,
+			'antivenom_cost': None, 'contact_number': '039 202 2233',
+		},
+		{
+			'id': 'demo-cape-coast', 'name': 'Cape Coast Teaching Hospital',
+			'facility_type': 'Teaching Hospital', 'region': 'Central Region',
+			'latitude': 5.1315, 'longitude': -1.2795, 'antivenom_available': True,
+			'antivenom_cost': 325.0, 'contact_number': '033 213 0500',
+		},
+		{
+			'id': 'demo-bolgatanga', 'name': 'Bolgatanga Regional Hospital',
+			'facility_type': 'Regional Hospital', 'region': 'Upper East Region',
+			'latitude': 10.7856, 'longitude': -0.8514, 'antivenom_available': False,
+			'antivenom_cost': None, 'contact_number': '038 202 2300',
+		},
+		{
+			'id': 'demo-kasoa', 'name': 'Kasoa Community Health Centre',
+			'facility_type': 'Health Centre', 'region': 'Central Region',
+			'latitude': 5.5346, 'longitude': -0.4168, 'antivenom_available': True,
+			'antivenom_cost': 200.0, 'contact_number': '030 309 1100',
+		},
+	]
+
+
 @snakebite_password_required
 def antivenom_map_view(request):
 	facilities = HealthFacility.objects.select_related('region').order_by('region__name', 'name')
@@ -1532,68 +1688,7 @@ def antivenom_map_view(request):
 		facility['latitude'] is not None and facility['longitude'] is not None
 		for facility in facilities_payload
 	):
-		facilities_payload = [
-			{
-				'id': 'demo-koforidua', 'name': 'Koforidua Regional Hospital',
-				'facility_type': 'Regional Hospital', 'region': 'Eastern Region',
-				'latitude': 6.0941, 'longitude': -0.2606, 'antivenom_available': True,
-				'antivenom_cost': 300.0, 'contact_number': '030 222 2222',
-			},
-			{
-				'id': 'demo-kumasi', 'name': 'Komfo Anokye Teaching Hospital',
-				'facility_type': 'Teaching Hospital', 'region': 'Ashanti Region',
-				'latitude': 6.6885, 'longitude': -1.6244, 'antivenom_available': False,
-				'antivenom_cost': None, 'contact_number': '032 202 2301',
-			},
-			{
-				'id': 'demo-accra', 'name': 'Korle Bu Teaching Hospital',
-				'facility_type': 'Teaching Hospital', 'region': 'Greater Accra',
-				'latitude': 5.5502, 'longitude': -0.1966, 'antivenom_available': True,
-				'antivenom_cost': 450.0, 'contact_number': '030 266 5401',
-			},
-			{
-				'id': 'demo-tamale', 'name': 'Tamale Teaching Hospital',
-				'facility_type': 'Teaching Hospital', 'region': 'Northern Region',
-				'latitude': 9.4075, 'longitude': -0.8533, 'antivenom_available': True,
-				'antivenom_cost': 380.0, 'contact_number': '037 202 8333',
-			},
-			{
-				'id': 'demo-sunyani', 'name': 'Sunyani Regional Hospital',
-				'facility_type': 'Regional Hospital', 'region': 'Bono Region',
-				'latitude': 7.3349, 'longitude': -2.3123, 'antivenom_available': False,
-				'antivenom_cost': None, 'contact_number': '035 202 2241',
-			},
-			{
-				'id': 'demo-ho', 'name': 'Ho Teaching Hospital',
-				'facility_type': 'Teaching Hospital', 'region': 'Volta Region',
-				'latitude': 6.6119, 'longitude': 0.4713, 'antivenom_available': True,
-				'antivenom_cost': 275.0, 'contact_number': '036 202 2333',
-			},
-			{
-				'id': 'demo-wa', 'name': 'Wa Municipal Hospital',
-				'facility_type': 'Municipal Hospital', 'region': 'Upper West Region',
-				'latitude': 10.0601, 'longitude': -2.5019, 'antivenom_available': False,
-				'antivenom_cost': None, 'contact_number': '039 202 2233',
-			},
-			{
-				'id': 'demo-cape-coast', 'name': 'Cape Coast Teaching Hospital',
-				'facility_type': 'Teaching Hospital', 'region': 'Central Region',
-				'latitude': 5.1315, 'longitude': -1.2795, 'antivenom_available': True,
-				'antivenom_cost': 325.0, 'contact_number': '033 213 0500',
-			},
-			{
-				'id': 'demo-bolgatanga', 'name': 'Bolgatanga Regional Hospital',
-				'facility_type': 'Regional Hospital', 'region': 'Upper East Region',
-				'latitude': 10.7856, 'longitude': -0.8514, 'antivenom_available': False,
-				'antivenom_cost': None, 'contact_number': '038 202 2300',
-			},
-			{
-				'id': 'demo-kasoa', 'name': 'Kasoa Community Health Centre',
-				'facility_type': 'Health Centre', 'region': 'Central Region',
-				'latitude': 5.5346, 'longitude': -0.4168, 'antivenom_available': True,
-				'antivenom_cost': 200.0, 'contact_number': '030 309 1100',
-			},
-		]
+		facilities_payload = _demo_facility_payload()
 
 	return render(
 		request,
@@ -1608,6 +1703,15 @@ def antivenom_map_view(request):
 @snakebite_password_required
 def resources_view(request):
 	return render(request, 'snakebite/resources.html')
+
+
+def sign_out_view(request):
+	request.session.pop(SNAKEBITE_ACCESS_SESSION_KEY, None)
+	request.session.pop(SNAKEBITE_PASSWORD_VERIFIED_SESSION_KEY, None)
+	request.session.pop(SNAKEBITE_NATIONALITY_SESSION_KEY, None)
+	request.session.pop(SNAKEBITE_MEMBER_TYPE_SESSION_KEY, None)
+	logout(request)
+	return redirect('snakebite:community_home')
 
 
 @snakebite_password_required

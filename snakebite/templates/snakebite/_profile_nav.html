@@ -58,30 +58,6 @@
       flex: 0 0 auto;
     }
 
-    .profile-nav__actions {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      flex: 0 0 auto;
-    }
-
-    .profile-nav__change-link {
-      text-decoration: none;
-      font-size: 0.72rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-weight: 900;
-      color: #f9fff8;
-      border: 1px solid rgba(249, 255, 248, 0.6);
-      border-radius: 999px;
-      padding: 7px 12px;
-      background: rgba(15, 56, 34, 0.28);
-    }
-
-    .profile-nav__change-link:hover {
-      background: rgba(15, 56, 34, 0.52);
-    }
-
     @media (max-width: 640px) {
       .profile-nav {
         padding: 10px 12px;
@@ -111,14 +87,6 @@
       {% endif %}
       <p class="profile-nav__text">{{ venomguard_member_type_label }} | {{ venomguard_nationality_label }}</p>
     </div>
-    <div class="profile-nav__actions">
-      <p class="profile-nav__label">Profile</p>
-      <a
-        class="profile-nav__change-link"
-        href="{% url 'snakebite:access' %}?next={{ request.path }}&step=profile&change_profile=1"
-      >
-        Change
-      </a>
-    </div>
+    <p class="profile-nav__label">Profile</p>
   </section>
 {% endif %}

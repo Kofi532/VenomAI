@@ -3,6 +3,15 @@
 
 {% block title %}VenomGuard AI | Nearest Help{% endblock %}
 
+{% block extra_head %}
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+>
+{% endblock %}
+
 {% block extra_styles %}
 <style>
     body {
@@ -52,22 +61,15 @@
         color: #f5f7fb;
     }
     .map-card {
-        position: relative;
         margin-bottom: 18px;
         border-radius: 20px;
-        border: 1px solid rgba(255,255,255,0.08);
-        background: linear-gradient(180deg, rgba(78, 144, 122, 0.18), rgba(8, 19, 16, 0.96));
         overflow: hidden;
-        min-height: 180px;
-        box-shadow: 0 15px 25px rgba(0,0,0,0.14);
+        height: 310px;
+        min-height: 310px;
     }
-    .map-grid {
-        position: absolute;
-        inset: 0;
-        background-image:
-            linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
-        background-size: 24px 24px;
+    #nearest-help-map {
+        width: 100%;
+        height: 100%;
     }
     .map-pin {
         position: absolute;
@@ -163,6 +165,20 @@
         text-transform: uppercase;
         letter-spacing: 0.06em;
     }
+    .leaflet-popup-content-wrapper,
+    .leaflet-popup-tip {
+        background: #ffffff;
+        color: #173d2b;
+    }
+    .facility-map-pin {
+        width: 20px;
+        height: 20px;
+        border-radius: 50% 50% 50% 0;
+        background: #1e7a3e;
+        border: 2px solid #c7f5d2;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+        transform: rotate(-45deg);
+    }
 </style>
 {% endblock %}
 
@@ -175,11 +191,8 @@
         </div>
     </header>
 
-    <div class="map-card" aria-label="Nearby facility map preview">
-        <div class="map-grid"></div>
-        <span class="map-pin pin-1"></span>
-        <span class="map-pin pin-2"></span>
-        <span class="map-pin pin-3"></span>
+    <div class="map-card" aria-label="Nearby facility map">
+        <div id="nearest-help-map"></div>
     </div>
 
     <div class="facility-list">
@@ -191,7 +204,7 @@
             <p class="facility-line">{{ facility.region.name|default:country_label }} · Antivenom: {{ facility.antivenom_cost_ghs|default:'Available' }}</p>
             <p class="facility-line">Phone: {{ facility.contact_phone|default:'112' }}</p>
             <div class="facility-actions">
-                <a href="https://www.google.com/maps/search/?api=1&query={{ facility.facility_name|default:'health facility'|urlencode }}" class="secondary-btn" target="_blank" rel="noopener noreferrer">Get Directions</a>
+                <a href="https://www.google.com/maps/dir/?api=1&destination={{ facility.latitude }},{{ facility.longitude }}" class="secondary-btn" target="_blank" rel="noopener noreferrer">Get Directions</a>
                 <a href="tel:{{ facility.contact_phone|default:emergency_number }}" class="primary-btn">Call for Transport Help</a>
             </div>
         </article>
@@ -211,4 +224,46 @@
         <a href="tel:{{ emergency_number|default:'112' }}" class="emergency-link">Emergency call</a>
     </div>
 </div>
+{{ facilities|json_script:"nearest-facilities-json" }}
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+></script>
+<script>
+    (function () {
+        var payload = document.getElementById('nearest-facilities-json');
+        var facilities = payload ? JSON.parse(payload.textContent) : [];
+        var map = L.map('nearest-help-map', { scrollWheelZoom: true });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        var locatedFacilities = facilities.filter(function (facility) {
+            return facility.latitude !== null && facility.longitude !== null;
+        });
+        var locations = locatedFacilities.map(function (facility) {
+            return [Number(facility.latitude), Number(facility.longitude)];
+        });
+
+        if (!locations.length) {
+            map.setView([7.9465, -1.0232], 6);
+            return;
+        }
+
+        locatedFacilities.forEach(function (facility, index) {
+            var location = locations[index];
+            var marker = L.marker(location, {
+                icon: L.divIcon({
+                    className: 'facility-map-pin',
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 20]
+                })
+            }).addTo(map);
+            marker.bindPopup('<strong>' + facility.facility_name + '</strong><br>' + facility.facility_type);
+        });
+        map.fitBounds(locations, { padding: [24, 24], maxZoom: 13 });
+    })();
+</script>
 {% endblock %}

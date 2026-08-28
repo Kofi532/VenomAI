@@ -208,67 +208,35 @@
       <p class="step-label">{% if show_profile_form %}Step 2 of 2{% else %}Step 1 of 2{% endif %}</p>
       <h1>{% if show_profile_form %}Set your profile{% else %}Welcome back{% endif %}</h1>
       <p class="intro">
-        {% if show_profile_form %}
-          Password confirmed. Choose your country to continue.
-        {% else %}
-          Enter your access password to continue to the VenomGuard AI application.
-        {% endif %}
+        Choose your country to continue.
       </p>
       <div class="progress" aria-label="Access progress">
         <span class="progress-segment active"></span>
-        <span class="progress-segment {% if show_profile_form %}active{% endif %}"></span>
+        <span class="progress-segment active"></span>
       </div>
 
       {% if error_message %}
         <div class="error" role="alert">{{ error_message }}</div>
       {% endif %}
 
-      {% if show_profile_form %}
-        <form method="post" novalidate>
-          {% csrf_token %}
-          <input type="hidden" name="next" value="{{ next_url }}">
-          <input type="hidden" name="action" value="profile">
-          <div class="field-group">
-            <label for="nationality">Country</label>
-            <select id="nationality" name="nationality" required>
-              <option value="">Select your country</option>
-              {% for code, label in nationality_options %}
-                <option value="{{ code }}" {% if selected_nationality == code %}selected{% endif %}>{{ label }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="actions">
-            <button type="submit">Continue to community home</button>
-          </div>
-        </form>
-      {% else %}
-        <form method="post" novalidate>
-          {% csrf_token %}
-          <input type="hidden" name="next" value="{{ next_url }}">
-          <input type="hidden" name="action" value="password">
-          <div class="field-group">
-            <label for="password">Access password</label>
-            <input id="password" name="password" type="password" autocomplete="current-password" required>
-          </div>
-          <label class="toggle" for="show-password">
-            <input id="show-password" type="checkbox">
-            <span>Show password</span>
-          </label>
-          <div class="actions">
-            <button type="submit">Continue</button>
-          </div>
-        </form>
-      {% endif %}
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next_url }}">
+        <input type="hidden" name="action" value="profile">
+        <div class="field-group">
+          <label for="nationality">Country</label>
+          <select id="nationality" name="nationality" required>
+            <option value="">Select your country</option>
+            {% for code, label in nationality_options %}
+              <option value="{{ code }}" {% if selected_nationality == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="actions">
+          <button type="submit">Continue to community home</button>
+        </div>
+      </form>
     </section>
   </main>
-  <script>
-    const passwordInput = document.getElementById('password');
-    const toggle = document.getElementById('show-password');
-    if (passwordInput && toggle) {
-      toggle.addEventListener('change', function () {
-        passwordInput.type = this.checked ? 'text' : 'password';
-      });
-    }
-  </script>
 </body>
 </html>

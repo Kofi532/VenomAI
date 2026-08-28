@@ -275,7 +275,7 @@
         {% endif %}
 
         <div class="footer">
-            <a class="secondary-btn" href="{% if current_step == 1 %}{% url 'snakebite:community_home' %}{% else %}{% url 'snakebite:community_bite_assessment' %}?step=1{% endif %}">Back</a>
+            <a class="secondary-btn" href="{% if current_step == 1 %}{% if is_healthcare_assessment %}{% url 'snakebite:chw_dashboard' %}{% else %}{% url 'snakebite:community_home' %}{% endif %}{% else %}{% url 'snakebite:community_bite_assessment' %}?step=1{% endif %}">Back</a>
             <button class="primary-btn" type="submit" name="next_step" value="evaluate">{% if current_step == 1 %}Next{% else %}Next{% endif %}</button>
         </div>
     </form>

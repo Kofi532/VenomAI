@@ -305,17 +305,7 @@ class SnakebiteAccessAndCHWTests(TestCase):
             {'reset_access': '1', 'next': reverse('snakebite:chw_home')},
         )
         self.assertEqual(access_response.status_code, 200)
-        self.assertContains(access_response, 'Enter your access password')
-
-        profile_response = self.client.post(
-            reverse('snakebite:access'),
-            {
-                'action': 'password',
-                'password': 'Dr.EricNyarko',
-                'next': reverse('snakebite:chw_home'),
-            },
-        )
-        self.assertEqual(profile_response.status_code, 302)
+        self.assertContains(access_response, 'Choose your country to continue.')
 
         dashboard_response = self.client.post(
             reverse('snakebite:access'),
@@ -354,7 +344,7 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertEqual(response.url, reverse('snakebite:community_home'))
         self.assertEqual(self.client.session['snakebite_member_type'], 'community')
 
-    def test_risk_result_uses_blank_find_help_page(self):
+    def test_risk_result_uses_get_help_page(self):
         session = self.client.session
         session['snakebite_access_granted'] = True
         session['snakebite_member_type'] = 'community'
@@ -367,9 +357,11 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertNotContains(response, 'Call for Transport Help')
         self.assertNotContains(response, 'Next: Find Nearest Help')
 
-        blank_response = self.client.get(reverse('snakebite:community_get_help'))
-        self.assertEqual(blank_response.status_code, 200)
-        self.assertEqual(blank_response.content, b'')
+        help_response = self.client.get(reverse('snakebite:community_get_help'))
+        self.assertEqual(help_response.status_code, 200)
+        self.assertContains(help_response, 'Get Directions')
+        self.assertContains(help_response, 'Call for Transport')
+        self.assertContains(help_response, 'Request Help')
 
     def test_healthcare_signup_redirects_to_chw_dashboard(self):
         response = self.client.post(
@@ -1217,6 +1209,10 @@ class SnakebiteAccessAndCHWTests(TestCase):
         help_response = self.client.get(reverse('snakebite:community_nearest_help'))
         self.assertEqual(help_response.status_code, 200)
         self.assertNotContains(help_response, 'href=""')
+        self.assertContains(help_response, 'id="nearest-help-map"')
+        self.assertContains(help_response, 'maps/dir/?api=1')
+        self.assertContains(help_response, 'destination=5.6037')
+        self.assertContains(help_response, 'href="tel:112"')
 
         snakes_response = self.client.get(reverse('snakebite:snakes_in_area'))
         self.assertEqual(snakes_response.status_code, 200)

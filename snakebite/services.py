@@ -180,6 +180,8 @@ def get_nearby_antivenom_facilities(latitude, longitude, max_distance_km=50, reg
                         "name": facility.region.name,
                         "code": facility.region.code,
                     },
+                    "latitude": float(facility.latitude),
+                    "longitude": float(facility.longitude),
                     "antivenom_cost_ghs": f"GHS {facility.antivenom_cost:.2f}" if facility.antivenom_cost is not None else None,
                     "contact_phone": facility.contact_number,
                     "distance_km": round(distance_km, 2),

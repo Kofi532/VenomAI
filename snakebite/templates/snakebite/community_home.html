@@ -206,7 +206,7 @@
         width: min(480px, 100%);
         transform: translateX(-50%);
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         padding: 8px 10px calc(10px + env(safe-area-inset-bottom));
         border-top: 1px solid #e2e9e3;
         background: rgba(255, 255, 255, .96);
@@ -289,12 +289,6 @@
     </a>
     <a href="{% url 'snakebite:education_training' %}">
         <span class="community-nav-icon" aria-hidden="true">▣</span><span>Learn</span>
-    </a>
-    <a href="{% url 'snakebite:community_nearest_help' %}">
-        <span class="community-nav-icon" aria-hidden="true">♡</span><span>Alerts</span>
-    </a>
-    <a href="{% url 'snakebite:settings' %}">
-        <span class="community-nav-icon" aria-hidden="true">●</span><span>Profile</span>
     </a>
 </nav>
 {% endblock %}

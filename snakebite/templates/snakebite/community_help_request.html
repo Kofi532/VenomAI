@@ -1,0 +1,102 @@
+{% extends 'snakebite/base.html' %}
+{% block title %}Help Request{% endblock %}
+{% block extra_styles %}
+<style>
+    :root {
+        --bg: #0d201d;
+        --panel: #152923;
+        --line: rgba(255,255,255,0.08);
+        --text: #edf7f3;
+        --muted: #b6cfc7;
+        --gold: #f5b800;
+        --green: #62d29b;
+        --shadow: 0 16px 40px rgba(0,0,0,0.22);
+    }
+    body {
+        background: linear-gradient(180deg, #0d201d 0%, #07110f 100%);
+        color: var(--text);
+    }
+    .page-shell {
+        max-width: 480px;
+        padding-top: 24px;
+    }
+    .card {
+        background: rgba(21, 41, 35, 0.96);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        padding: 18px 16px;
+    }
+    h1 {
+        margin: 0 0 10px;
+        font-size: 1.2rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+    .muted {
+        color: var(--muted);
+        line-height: 1.6;
+        margin: 0 0 12px;
+    }
+    .detail-list {
+        display: grid;
+        gap: 8px;
+        margin: 14px 0 18px;
+        font-size: 0.92rem;
+    }
+    .detail {
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--line);
+    }
+    .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 18px;
+    }
+    .primary-btn,
+    .secondary-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        border-radius: 12px;
+        font-weight: 800;
+        padding: 10px 12px;
+        text-align: center;
+    }
+    .primary-btn {
+        background: linear-gradient(135deg, #f5b800, #ffd86b);
+        color: #11221d;
+    }
+    .secondary-btn {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--line);
+        color: var(--text);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+    <div class="card">
+        <h1>Request Help</h1>
+        <p class="muted">Your request is ready to send to the nearest facility. Call the hospital or use Google Maps for directions if you need to travel immediately.</p>
+
+        <div class="detail-list">
+            <div class="detail"><strong>Facility:</strong> {{ facility.name }}</div>
+            <div class="detail"><strong>Type:</strong> {{ facility.facility_type }}</div>
+            <div class="detail"><strong>Region:</strong> {{ facility.region }}</div>
+            <div class="detail"><strong>Phone:</strong> {{ facility.contact_number }}</div>
+            <div class="detail"><strong>Antivenom:</strong> {% if facility.antivenom_available %}Available{% else %}Not confirmed{% endif %}</div>
+        </div>
+
+        <div class="actions">
+            <a class="primary-btn" href="tel:{{ facility.contact_number }}">Call Facility</a>
+            <a class="secondary-btn" href="https://www.google.com/maps/dir/?api=1&destination={{ facility.latitude }},{{ facility.longitude }}" target="_blank" rel="noopener noreferrer">Get Directions</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

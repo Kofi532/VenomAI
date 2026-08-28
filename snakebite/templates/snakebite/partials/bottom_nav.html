@@ -9,17 +9,13 @@
     <span class="nav-icon">▣</span>
     <span>Cases</span>
   </a>
-  <a href="{% url 'snakebite:chw_dashboard' %}" class="nav-item {% if current_name == 'chw_dashboard' %}active{% endif %}">
-    <span class="nav-icon">⚑</span>
-    <span>Alerts</span>
-  </a>
   <a href="{% url 'snakebite:report_sighting' %}" class="nav-item {% if current_name == 'report_sighting' or current_name == 'report' %}active{% endif %}">
     <span class="nav-icon">📝</span>
     <span>Report</span>
   </a>
-  <a href="{% url 'snakebite:settings' %}" class="nav-item {% if current_name == 'settings' %}active{% endif %}">
+  <a href="{% url 'snakebite:sign_out' %}" class="nav-item">
     <span class="nav-icon">⚙️</span>
-    <span>More</span>
+    <span>Sign out</span>
   </a>
 </nav>
 {% else %}
@@ -35,14 +31,6 @@
   <a href="{% url 'snakebite:report' %}" class="nav-item {% if current_name == 'report' or current_name == 'report_sighting' %}active{% endif %}">
     <span class="nav-icon">📝</span>
     <span>Report</span>
-  </a>
-  <a href="{% url 'snakebite:community_risk_result' %}" class="nav-item {% if current_name == 'community_risk_result' %}active{% endif %}">
-    <span class="nav-icon">🚨</span>
-    <span>Alerts</span>
-  </a>
-  <a href="{% url 'snakebite:settings' %}" class="nav-item {% if current_name == 'settings' %}active{% endif %}">
-    <span class="nav-icon">👤</span>
-    <span>Profile</span>
   </a>
 </nav>
 {% endif %}
@@ -64,8 +52,12 @@
     backdrop-filter: blur(12px);
   }
 
+  .snakebite-community-nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .snakebite-healthcare-nav {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .snakebite-mobile-nav .nav-item {
