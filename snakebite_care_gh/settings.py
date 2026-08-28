@@ -152,7 +152,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'snakes_pics']
+SNAKE_PICS_DIR = BASE_DIR / 'snakes_pics'
+STATICFILES_DIRS = [SNAKE_PICS_DIR] if SNAKE_PICS_DIR.exists() else []
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'

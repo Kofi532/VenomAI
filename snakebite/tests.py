@@ -284,6 +284,8 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Antivenom available')
         self.assertContains(response, 'No antivenom')
+        self.assertNotContains(response, 'Change')
+        self.assertNotContains(response, 'Healthcare Member | Ghana')
         self.assertContains(response, 'Koforidua Regional Hospital')
         self.assertContains(response, 'Komfo Anokye Teaching Hospital')
         self.assertContains(response, 'Tamale Teaching Hospital')
