@@ -235,12 +235,10 @@
 
 {% block content %}
 <main class="community-home" aria-label="VenomGuard AI community home">
-    <aside class="healthcare-prompt" aria-label="Healthcare member sign in">
+    <aside class="healthcare-prompt" aria-label="Healthcare member dashboard">
         <div class="healthcare-prompt-copy">
-            <p class="healthcare-prompt-title">Are you a healthcare member?</p>
-            <p class="healthcare-prompt-text">Sign in or sign up to access your dashboard.</p>
+            <p class="healthcare-prompt-title">Are you a healthcare member? <a href="{% url 'snakebite:chw_home' %}" class="healthcare-prompt-link">click here</a></p>
         </div>
-        <a class="healthcare-prompt-link" href="{% url 'snakebite:healthcare_auth' %}">Sign in / Sign up</a>
     </aside>
 
     <header class="community-header">

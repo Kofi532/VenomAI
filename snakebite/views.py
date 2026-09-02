@@ -647,15 +647,14 @@ def sighting_detail_view(request, id):
 	)
 
 
-@snakebite_password_required
 def chw_home_view(request):
 	member_type = _resolve_member_type(request)
 	if member_type != 'healthcare':
-		return redirect('snakebite:home')
+		request.session[SNAKEBITE_MEMBER_TYPE_SESSION_KEY] = 'healthcare'
+		request.session[SNAKEBITE_ACCESS_SESSION_KEY] = True
 	return CHWDashboardView.as_view()(request)
 
 
-@snakebite_password_required
 def community_home_view(request):
 	member_type = _resolve_member_type(request)
 	if member_type == 'healthcare':

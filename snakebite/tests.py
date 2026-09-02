@@ -225,6 +225,13 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertEqual(chw_response.status_code, 200)
         self.assertContains(chw_response, 'Healthcare Worker')
 
+    def test_community_home_allows_direct_healthcare_dashboard_link(self):
+        response = self.client.get(reverse('snakebite:community_home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Are you a healthcare member?')
+        self.assertContains(response, 'click here')
+        self.assertContains(response, reverse('snakebite:chw_home'))
+
     def test_community_home_uses_valid_nav_routes(self):
         session = self.client.session
         session['snakebite_access_granted'] = True
@@ -250,7 +257,8 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertContains(response, reverse('snakebite:education_training'))
         self.assertContains(response, 'aria-label="VenomGuard AI home"')
         self.assertContains(response, 'Are you a healthcare member?')
-        self.assertContains(response, reverse('snakebite:healthcare_auth'))
+        self.assertContains(response, 'Healthcare Dashboard')
+        self.assertContains(response, reverse('snakebite:chw_home'))
 
         learn_response = self.client.get(reverse('snakebite:education_training'))
         self.assertEqual(learn_response.status_code, 200)
