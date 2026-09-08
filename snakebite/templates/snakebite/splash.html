@@ -57,7 +57,7 @@
           return undefined;
         }
         const redirectTimer = window.setTimeout(() => {
-          window.location.href = '/venomguard/access/';
+          window.location.href = '/venomguard/access/?reset_access=1';
         }, 700);
         return () => window.clearTimeout(redirectTimer);
       }, [progress]);
