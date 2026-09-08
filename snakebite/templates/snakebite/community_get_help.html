@@ -199,11 +199,11 @@
             <p class="facility-line">Cost: {% if facility.antivenom_cost %}GHS {{ facility.antivenom_cost }}{% else %}Not listed{% endif %}</p>
             <div class="facility-actions">
                 <a href="https://www.google.com/maps/dir/?api=1&destination={{ facility.latitude }},{{ facility.longitude }}" class="secondary-btn" target="_blank" rel="noopener noreferrer">Get Directions</a>
-                <a href="tel:{{ facility.contact_number|default:'112' }}" class="primary-btn">Call for Transport</a>
+                <a href="{% url 'snakebite:community_transport' %}?facility={{ facility.id }}" class="primary-btn">Call for Transport</a>
             </div>
             <div class="facility-actions" style="margin-top: 10px;">
                 <a href="{% url 'snakebite:community_help_request' facility.id %}" class="ghost-btn">Request Help</a>
-                <a href="tel:112" class="secondary-btn">Emergency</a>
+                <a href="{% url 'snakebite:community_emergency' %}?facility={{ facility.id }}" class="secondary-btn">Emergency</a>
             </div>
         </article>
         {% empty %}

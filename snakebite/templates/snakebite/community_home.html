@@ -5,199 +5,299 @@
 
 {% block extra_styles %}
 <style>
-    body { background: #f5f7f5; color: #10221b; }
-    .page-shell { max-width: 480px; padding: 0 16px 104px; }
-    .community-home {
-        min-height: calc(100vh - 104px);
-        padding-top: 14px;
+    /* Reset & base */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        background: #f0f2f5;
+        color: #1a1a2e;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
+    .page-shell {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 0 12px 104px;
+        position: relative;
+        width: 100%;
+    }
+
+    /* Wallet Card - Like the photo style */
+    .wallet-card {
+        background: linear-gradient(145deg, #1a2a3a, #0d1b2a);
+        border-radius: 20px;
+        padding: 18px 16px 16px;
+        margin: 12px 0 16px;
+        color: #fff;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+    }
+    .wallet-card::after {
+        content: '🐍';
+        position: absolute;
+        top: -30px;
+        right: -20px;
+        font-size: 100px;
+        opacity: 0.06;
+        transform: rotate(15deg);
+    }
+    .wallet-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 4px;
+        position: relative;
+        z-index: 1;
+    }
+    .wallet-label {
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: rgba(255,255,255,0.82);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+    .wallet-number {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: rgba(255,255,255,0.9);
+        background: rgba(255,255,255,0.06);
+        padding: 2px 10px;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.06);
+    }
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+    .hero-content .eyebrow {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: rgba(255,255,255,0.82);
+        margin: 0 0 2px;
+        font-weight: 600;
+    }
+    .hero-content .hero-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0 0 10px;
+        line-height: 1.2;
+        color: #fff;
+    }
+    .wallet-actions {
+        display: flex;
+        gap: 8px;
+        position: relative;
+        z-index: 1;
+    }
+    .wallet-btn {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.05);
+        color: #fff;
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        letter-spacing: 0.3px;
+        backdrop-filter: blur(4px);
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .wallet-btn:hover { background: rgba(255,255,255,0.14); }
+    .wallet-btn.primary {
+        background: #f5b800;
+        color: #1a2a3a;
+        border-color: #f5b800;
+        font-weight: 700;
+    }
+    .wallet-btn.primary:hover { background: #e5a900; }
+
+    /* Quick action grid - 4 items */
+    .quick-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        margin: 12px 0 10px;
+        width: 100%;
+    }
+    .quick-grid-item {
+        background: #fff;
+        border-radius: 14px;
+        padding: 10px 4px 8px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        transition: all 0.15s;
+        border: 1px solid rgba(0,0,0,0.02);
+        text-decoration: none;
+        color: #1a1a2e;
+        font-weight: 600;
+        font-size: 0.75rem;
+        letter-spacing: 0.3px;
+    }
+    .quick-grid-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        border-color: #e5efe7;
+    }
+    .quick-grid-item .icon {
+        display: block;
+        font-size: 1.4rem;
+        margin-bottom: 2px;
+        color: #173d2b;
+    }
+    .quick-grid-item.featured .icon { color: #f5b800; }
+    .quick-grid-item.highlight {
+        background: #173d2b;
+        color: #fff;
+    }
+    .quick-grid-item.highlight .icon { color: #f5b800; }
+
+    /* Services row - unique services only */
+    .services-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin: 6px 0 12px;
+        justify-content: center;
+        width: 100%;
+    }
+    .services-row a {
+        background: #fff;
+        border: 1px solid #e8ece9;
+        border-radius: 30px;
+        padding: 5px 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #1a2a3a;
+        text-decoration: none;
+        transition: all 0.15s;
+        letter-spacing: 0.2px;
+        flex: 0 1 auto;
+        white-space: nowrap;
+    }
+    .services-row a:hover {
+        background: #f5f7f5;
+        border-color: #173d2b;
+        color: #173d2b;
+    }
+
+    /* Promo banner */
+    .promo-banner {
+        background: linear-gradient(135deg, #e5efe7, #d6e5d8);
+        border-radius: 14px;
+        padding: 12px 16px;
+        margin: 10px 0 8px;
+        color: #1a2a3a;
+        border: 1px solid #c8dccb;
+        width: 100%;
+    }
+    .promo-banner h3 {
+        font-size: 0.9rem;
+        font-weight: 800;
+        margin: 0 0 2px;
+        letter-spacing: -0.3px;
+        color: #173d2b;
+    }
+    .promo-banner p {
+        font-size: 0.78rem;
+        font-weight: 600;
+        margin: 0;
+        opacity: 1;
+        line-height: 1.4;
+    }
+
+    /* Healthcare prompt */
     .healthcare-prompt {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 14px;
-        margin-bottom: 14px;
-        padding: 14px 16px;
-        border: 1px solid #d8e6d9;
-        border-radius: 16px;
-        background: #fff;
+        background: rgba(23,61,43,0.04);
+        border-radius: 12px;
+        padding: 6px 12px;
+        margin: 0 0 4px;
+        border: 1px solid rgba(23,61,43,0.06);
+        width: 100%;
     }
-    .healthcare-prompt-copy { min-width: 0; }
     .healthcare-prompt-title {
-        margin: 0 0 3px;
-        color: #173d2b;
-        font-size: .82rem;
-        font-weight: 850;
-    }
-    .healthcare-prompt-text {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #47725a;
         margin: 0;
-        color: #6b7e72;
-        font-size: .72rem;
-        line-height: 1.35;
     }
     .healthcare-prompt-link {
-        flex: 0 0 auto;
-        padding: 9px 12px;
-        border-radius: 10px;
-        background: #f5b800;
-        color: #173d2b;
-        font-size: .72rem;
-        font-weight: 850;
-        text-decoration: none;
-        white-space: nowrap;
-    }
-    .healthcare-prompt-link:hover { background: #e5a900; }
-    .community-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        height: 48px;
-        margin-bottom: 22px;
-    }
-    .header-icon {
-        width: 38px;
-        height: 38px;
-        display: grid;
-        place-items: center;
-        border: 1px solid #d8e1da;
-        border-radius: 12px;
-        background: #fff;
-        color: #173d2b;
-        font-size: 22px;
-        text-decoration: none;
-    }
-    .brand-mark {
-        width: 34px;
-        height: 34px;
-        display: grid;
-        place-items: center;
-        border-radius: 11px;
-        background: #173d2b;
-        color: #f5b800;
-        font-size: 19px;
-        box-shadow: 0 6px 14px rgba(23, 61, 43, .18);
-    }
-    .brand-title {
-        margin: 0;
-        color: #173d2b;
-        font-size: 1.05rem;
-        font-weight: 850;
-        letter-spacing: -.01em;
-    }
-    .hero-card {
-        position: relative;
-        overflow: hidden;
-        min-height: 238px;
-        padding: 24px 20px 20px;
-        border-radius: 24px;
-        background: #e5efe7;
-        border: 1px solid #d6e5d8;
-    }
-    .hero-copy { position: relative; z-index: 1; max-width: 68%; }
-    .eyebrow {
-        margin: 0 0 12px;
-        color: #47725a;
-        font-size: .68rem;
-        font-weight: 800;
-        letter-spacing: .14em;
-        text-transform: uppercase;
-    }
-    .hero-title {
-        margin: 0;
-        color: #173d2b;
-        font-size: 1.72rem;
-        line-height: 1.12;
-        letter-spacing: -.035em;
-    }
-    .snake-illustration {
-        position: absolute;
-        right: -5px;
-        bottom: 4px;
-        width: 150px;
-        height: 165px;
-        display: grid;
-        place-items: center;
-        font-size: 7.6rem;
-        transform: rotate(-13deg);
-        filter: drop-shadow(0 13px 8px rgba(23, 61, 43, .14));
-    }
-    .assessment-button {
-        position: absolute;
-        z-index: 2;
-        left: 20px;
-        right: 20px;
-        bottom: 20px;
-        display: flex;
-        min-height: 50px;
-        align-items: center;
-        justify-content: center;
-        border-radius: 14px;
         background: #173d2b;
         color: #fff;
-        font-size: .86rem;
-        font-weight: 800;
+        padding: 3px 12px;
+        border-radius: 30px;
+        font-size: 0.72rem;
+        font-weight: 700;
         text-decoration: none;
-        box-shadow: 0 9px 18px rgba(23, 61, 43, .2);
-        transition: transform .15s ease, background .15s ease;
+        transition: background 0.15s;
+        white-space: nowrap;
     }
-    .assessment-button:hover { background: #24593e; transform: translateY(-1px); }
-    .section-heading {
-        margin: 28px 2px 12px;
-        color: #173d2b;
-        font-size: .78rem;
-        font-weight: 850;
-        letter-spacing: .11em;
-        text-transform: uppercase;
-    }
-    .quick-actions { display: grid; gap: 10px; }
-    .quick-action {
+    .healthcare-prompt-link:hover { background: #24593e; }
+
+    /* Brand header */
+    .brand-mini {
         display: flex;
         align-items: center;
-        gap: 14px;
-        min-height: 68px;
-        padding: 12px 14px;
-        border: 1px solid #e0e7e1;
-        border-radius: 16px;
-        background: #fff;
-        color: #173d2b;
-        text-decoration: none;
-        box-shadow: 0 6px 16px rgba(28, 65, 42, .05);
+        gap: 8px;
+        padding: 4px 0 2px;
+        width: 100%;
     }
-    .quick-icon {
-        width: 40px;
-        height: 40px;
+    .brand-mini .brand-mark {
+        width: 28px;
+        height: 28px;
         display: grid;
         place-items: center;
-        flex: 0 0 40px;
-        border-radius: 12px;
-        background: #edf5ee;
-        color: #2a6645;
-        font-size: 20px;
+        background: #173d2b;
+        border-radius: 8px;
+        color: #f5b800;
+        font-size: 1rem;
+        text-decoration: none;
+        flex-shrink: 0;
     }
-    .quick-label { flex: 1; font-size: .9rem; font-weight: 800; }
-    .quick-arrow { color: #91a69a; font-size: 1.3rem; }
-    .language-form {
+    .brand-mini h1 {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #173d2b;
+        margin: 0;
+        letter-spacing: -0.3px;
+    }
+
+    /* Language selector */
+    .lang-selector {
+        display: flex;
+        justify-content: flex-end;
+        margin: 8px 0 4px;
+        padding: 4px 10px;
+        background: rgba(0,0,0,0.02);
+        border-radius: 30px;
+        border: 1px solid rgba(0,0,0,0.04);
+        width: 100%;
+    }
+    .lang-selector label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #6b7e72;
+        margin-right: 6px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-top: 26px;
-        padding: 14px;
-        border: 1px solid #e0e7e1;
-        border-radius: 16px;
-        background: #fff;
     }
-    .language-label { color: #6b7e72; font-size: .76rem; font-weight: 700; }
-    .language-select {
-        max-width: 180px;
+    .lang-selector select {
         border: 0;
-        outline: 0;
-        color: #173d2b;
         background: transparent;
-        font-size: .78rem;
-        font-weight: 800;
-        text-align: right;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #173d2b;
+        outline: 0;
+        padding: 2px 0;
+        max-width: 140px;
     }
+
+    /* Original community nav - preserve styling */
     .community-nav {
         position: fixed;
         left: 50%;
@@ -219,68 +319,110 @@
         align-items: center;
         gap: 4px;
         padding: 6px 2px;
-        color: #94a49a;
-        font-size: .67rem;
+        color: #5b6e62;
+        font-size: .75rem;
         font-weight: 800;
         text-decoration: none;
     }
     .community-nav a.active { color: #173d2b; }
     .community-nav-icon { font-size: 1.15rem; line-height: 1; }
+
+    @media (max-width: 400px) {
+        .page-shell { padding: 0 8px 104px; }
+        .wallet-card { padding: 14px 12px 14px; }
+        .hero-content .hero-title { font-size: 1rem; }
+        .quick-grid-item { padding: 8px 2px 6px; font-size: 0.7rem; }
+        .quick-grid-item .icon { font-size: 1.2rem; }
+        .services-row a { font-size: 0.7rem; padding: 4px 8px; }
+        .wallet-btn { font-size: 0.7rem; padding: 4px 10px; }
+        .wallet-label { font-size: 0.7rem; }
+        .wallet-number { font-size: 0.7rem; }
+    }
+
     @media (max-width: 360px) {
-        .hero-title { font-size: 1.48rem; }
-        .snake-illustration { right: -18px; transform: scale(.88) rotate(-13deg); }
+        .quick-grid { gap: 4px; }
+        .quick-grid-item { font-size: 0.65rem; }
+        .quick-grid-item .icon { font-size: 1rem; }
+        .services-row a { font-size: 0.65rem; padding: 3px 6px; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<main class="community-home" aria-label="VenomGuard AI community home">
-    <aside class="healthcare-prompt" aria-label="Healthcare member dashboard">
-        <div class="healthcare-prompt-copy">
-            <p class="healthcare-prompt-title">Are you a healthcare member? <a href="{% url 'snakebite:chw_home' %}" class="healthcare-prompt-link">click here</a></p>
-        </div>
-    </aside>
+<div class="page-shell">
 
-    <header class="community-header">
-        <a href="{% url 'snakebite:access' %}" class="header-icon" aria-label="Back to access">‹</a>
+    <!-- Healthcare member prompt -->
+    <div class="healthcare-prompt">
+        <span class="healthcare-prompt-title">👩‍⚕️ Are you a healthcare member?</span>
+        <a href="{% url 'snakebite:chw_home' %}" class="healthcare-prompt-link">click here →</a>
+    </div>
+
+    <!-- Brand header -->
+    <div class="brand-mini">
         <a href="{{ venomguard_home_url }}" class="brand-mark" aria-label="VenomGuard AI home">🐍</a>
-        <h1 class="brand-title">VenomGuard AI</h1>
-    </header>
+        <h1>VenomGuard AI</h1>
+    </div>
 
-    <section class="hero-card" aria-labelledby="welcome-title">
-        <div class="hero-copy">
-            <p class="eyebrow">Community care</p>
-            <h2 id="welcome-title" class="hero-title">Hello! If someone is bitten by a snake, we can help.</h2>
+    <!-- ====== WALLET CARD ====== -->
+    <div class="wallet-card">
+        <div class="wallet-header">
+            <span class="wallet-label">🐍 Community Care</span>
+            <span class="wallet-number">VenomGuard</span>
         </div>
-        <div class="snake-illustration" aria-hidden="true">🐍</div>
-        <a class="assessment-button" href="{% url 'snakebite:community_bite_assessment' %}">Start Bite Assessment <span aria-hidden="true">&nbsp;→</span></a>
-    </section>
 
-    <h2 class="section-heading">Quick access</h2>
-    <nav class="quick-actions" aria-label="Community tools">
-        <a class="quick-action" href="{% url 'snakebite:first_aid' %}">
-            <span class="quick-icon" aria-hidden="true">✚</span>
-            <span class="quick-label">First Aid Guide</span>
-            <span class="quick-arrow" aria-hidden="true">›</span>
-        </a>
-        <a class="quick-action" href="{% url 'snakebite:community_nearest_help' %}">
-            <span class="quick-icon" aria-hidden="true">⌖</span>
-            <span class="quick-label">Find Nearest Help</span>
-            <span class="quick-arrow" aria-hidden="true">›</span>
-        </a>
-    </nav>
+        <div class="hero-content">
+            <p class="eyebrow">Welcome</p>
+            <h2 class="hero-title">Hello! If someone is bitten by a snake, we can help.</h2>
+        </div>
 
-    <form method="post" class="language-form" aria-label="Language and country preference">
+        <div class="wallet-actions">
+            <a href="{% url 'snakebite:community_bite_assessment' %}" class="wallet-btn primary">Start Assessment →</a>
+        </div>
+    </div>
+
+    <!-- ====== QUICK GRID - 4 unique actions ====== -->
+    <div class="quick-grid">
+        <a href="{% url 'snakebite:first_aid' %}" class="quick-grid-item featured">
+            <span class="icon">✚</span> First Aid
+        </a>
+        <a href="{% url 'snakebite:community_nearest_help' %}" class="quick-grid-item highlight">
+            <span class="icon">⌖</span> Find Help
+        </a>
+        <a href="{% url 'snakebite:education_training' %}" class="quick-grid-item">
+            <span class="icon">▣</span> Learn
+        </a>
+        <a href="{% url 'snakebite:community_bite_assessment' %}" class="quick-grid-item">
+            <span class="icon">🩺</span> Assess
+        </a>
+    </div>
+
+    <!-- ====== SERVICES ROW - unique services only (no repeats) ====== -->
+    <div class="services-row">
+        <a href="{% url 'snakebite:chw_home' %}">Healthcare</a>
+        <a href="{% url 'snakebite:community_nearest_help' %}">Nearest Help</a>
+        <a href="{% url 'snakebite:education_training' %}">Education</a>
+    </div>
+
+    <!-- ====== PROMO BANNER ====== -->
+    <div class="promo-banner">
+        <h3>🐍 Quick Action</h3>
+        <p>Start the bite assessment now. Every second counts.<br>VenomGuard AI is here to help.</p>
+    </div>
+
+    <!-- ====== LANGUAGE SELECTOR ====== -->
+    <form method="post" class="lang-selector">
         {% csrf_token %}
-        <label class="language-label" for="language-country">Language / region</label>
-        <select id="language-country" name="nationality" class="language-select" onchange="this.form.submit()">
+        <label for="lang-select">🌍 Language / region</label>
+        <select id="lang-select" name="nationality" onchange="this.form.submit()">
             {% for code, label in country_options %}
                 <option value="{{ code }}" {% if selected_country == code %}selected{% endif %}>English ({{ label }})</option>
             {% endfor %}
         </select>
     </form>
-</main>
 
+</div>
+
+<!-- ====== ORIGINAL COMMUNITY NAV ====== -->
 <nav class="community-nav" aria-label="Community navigation">
     <a href="{% url 'snakebite:community_home' %}" class="active" aria-current="page">
         <span class="community-nav-icon" aria-hidden="true">⌂</span><span>Home</span>

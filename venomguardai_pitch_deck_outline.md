@@ -1,4 +1,4 @@
-# VenomGuard AI: Pitch Deck and Product Blueprint
+## VenomGuard AI: Pitch Deck and Product Blueprint
 
 > This document is both a presentation outline and an implementation brief. An AI reading it should be able to understand the product purpose, users, routes, state transitions, data contracts, business rules, and visual interface well enough to recreate the experience without guessing.
 

@@ -371,6 +371,22 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertContains(help_response, 'Call for Transport')
         self.assertContains(help_response, 'Request Help')
 
+    def test_emergency_action_landing_pages_exist(self):
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_member_type'] = 'community'
+        session.save()
+
+        transport_response = self.client.get(reverse('snakebite:community_transport'))
+        self.assertEqual(transport_response.status_code, 200)
+        self.assertContains(transport_response, 'Arrange transport')
+        self.assertContains(transport_response, 'Call emergency transport')
+
+        emergency_response = self.client.get(reverse('snakebite:community_emergency'))
+        self.assertEqual(emergency_response.status_code, 200)
+        self.assertContains(emergency_response, 'Emergency action now')
+        self.assertContains(emergency_response, 'Call emergency services')
+
     def test_healthcare_signup_redirects_to_chw_dashboard(self):
         response = self.client.post(
             reverse('snakebite:healthcare_auth'),
@@ -1042,6 +1058,40 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertIn('swelling', case.symptoms)
         self.assertEqual(case.clinical_notes, 'Needs urgent review')
 
+    def test_new_bite_assessment_creates_a_new_dashboard_case(self):
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_nationality'] = 'ghana'
+        session['snakebite_member_type'] = 'community'
+        session.save()
+
+        assessment_url = reverse('snakebite:community_bite_assessment')
+        self.client.post(assessment_url, {'step': '1', 'snake_type': 'viper'})
+        self.client.post(assessment_url + '?step=2', {'step': '2', 'symptoms': ['swelling']})
+        self.client.post(assessment_url + '?step=3', {'step': '3', 'bite_time': 'just_now'})
+        self.client.post(
+            assessment_url + '?step=4',
+            {'step': '4', 'location': 'Accra', 'patient_age_group': 'adult', 'comments': 'First report'},
+        )
+
+        self.client.get(assessment_url)
+        self.client.post(assessment_url, {'step': '1', 'snake_type': 'cobra'})
+        self.client.post(assessment_url + '?step=2', {'step': '2', 'symptoms': ['bleeding-gums']})
+        self.client.post(assessment_url + '?step=3', {'step': '3', 'bite_time': 'earlier_today'})
+        self.client.post(
+            assessment_url + '?step=4',
+            {'step': '4', 'location': 'Kumasi', 'patient_age_group': 'adult', 'comments': 'Second report'},
+        )
+
+        self.assertEqual(PatientCase.objects.count(), 2)
+        self.assertSetEqual(
+            set(PatientCase.objects.values_list('location', flat=True)),
+            {'Accra', 'Kumasi'},
+        )
+        dashboard = self.client.get(reverse('snakebite:chw_home'))
+        self.assertContains(dashboard, 'Accra')
+        self.assertContains(dashboard, 'Kumasi')
+
     def test_resumed_assessment_also_creates_missing_dashboard_case(self):
         region = Region.objects.create(name='Ghana', code='ghana')
         assessment = PatientAssessment.objects.create(
@@ -1099,6 +1149,69 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertContains(response, 'Recent assessments')
         self.assertContains(response, 'High')
         self.assertContains(response, 'Swelling')
+
+    def test_case_details_explains_risk_and_reviews_clinical_continuity(self):
+        region = Region.objects.create(name='Ghana', code='ghana')
+        assessment = PatientAssessment.objects.create(
+            region=region,
+            patient_age_group='adult',
+            risk_level=PatientAssessment.RiskLevel.HIGH,
+            severity_score=58,
+            recommended_action='Urgent referral',
+        )
+        assessment.symptoms_present.set([
+            Symptom.objects.create(name='Swelling', slug='swelling', body_system='Extremity'),
+            Symptom.objects.create(name='Bleeding', slug='bleeding', body_system='General'),
+            Symptom.objects.create(name='Difficulty breathing', slug='difficulty-breathing', body_system='Respiratory'),
+        ])
+
+        case = PatientCase.objects.create(
+            patient_name='Kwame Mensah',
+            patient_age=19,
+            location='Accra',
+            symptoms='Severe pain\nSwelling\nDifficulty breathing\nBleeding',
+            risk_level=PatientCase.RiskLevel.HIGH,
+            status=PatientCase.Status.OPEN,
+            clinical_notes='Patient is being monitored by CHW and local healer for continuity.',
+        )
+
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_nationality'] = 'ghana'
+        session['snakebite_member_type'] = 'healthcare'
+        session.save()
+
+        response = self.client.get(reverse('snakebite:case_details', kwargs={'pk': case.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Why this risk score')
+        self.assertContains(response, 'Transfer plan')
+        self.assertContains(response, 'Clinical review')
+        self.assertContains(response, 'Trusted community contact')
+
+    def test_risk_result_explains_risk_drivers_and_transport_plan(self):
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_nationality'] = 'ghana'
+        session['snakebite_member_type'] = 'community'
+        session['snakebite_assessment_result'] = {
+            'risk_level': 'HIGH RISK',
+            'risk_key': 'high',
+            'severity_score': 58,
+            'predicted_envenomation': 'Hemotoxic',
+            'recommended_actions': ['Start First Aid / Splint Limb', 'Do NOT cut or suck wound', 'Stabilize Patient & Administer Antivenom', 'Urgent Referral to nearest facility'],
+            'likely_snakes': ['Viper', 'Mamba'],
+            'snake_type': 'viper',
+            'location': 'Ghana',
+            'symptoms': ['swelling', 'bleeding-gums', 'difficulty-breathing'],
+        }
+        session.save()
+
+        response = self.client.get(reverse('snakebite:community_risk_result'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Why this score')
+        self.assertContains(response, 'Risk drivers')
+        self.assertContains(response, 'Transfer plan')
+        self.assertContains(response, 'Confidence')
 
     def test_case_details_shows_referral_and_call_actions_for_healthcare_users(self):
         region = Region.objects.create(name='Ghana', code='ghana')

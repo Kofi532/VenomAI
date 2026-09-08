@@ -1,0 +1,128 @@
+{% extends 'snakebite/base.html' %}
+{% block title %}Emergency{% endblock %}
+{% block extra_styles %}
+<style>
+    .urgent-shell {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 18px 16px 28px;
+    }
+    .urgent-card {
+        background: #ffffff;
+        border: 1px solid #d8e1da;
+        border-radius: 20px;
+        box-shadow: 0 8px 18px rgba(23, 61, 43, 0.05);
+        padding: 20px 16px 18px;
+    }
+    .eyebrow {
+        display: inline-block;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #6b7e72;
+        margin-bottom: 10px;
+    }
+    h1 {
+        margin: 0 0 8px;
+        font-size: 1.7rem;
+        line-height: 1.2;
+        color: #173d2b;
+    }
+    .lead {
+        margin: 0 0 18px;
+        color: #5d6f65;
+        line-height: 1.6;
+        font-size: 0.98rem;
+    }
+    .alert-box {
+        background: rgba(255, 91, 82, 0.08);
+        border: 1px solid rgba(255, 91, 82, 0.22);
+        border-radius: 14px;
+        padding: 12px 14px;
+        margin-bottom: 18px;
+        color: #8f2f2d;
+        font-weight: 700;
+    }
+    .detail-list {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+    .detail {
+        background: #f4f8f4;
+        border: 1px solid #dfe9df;
+        border-radius: 12px;
+        padding: 12px 14px;
+    }
+    .detail strong {
+        display: block;
+        margin-bottom: 4px;
+        color: #173d2b;
+    }
+    .detail span {
+        color: #476152;
+        line-height: 1.5;
+    }
+    .action-stack {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .primary-btn,
+    .secondary-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        border-radius: 12px;
+        font-weight: 800;
+        text-align: center;
+        padding: 12px 16px;
+    }
+    .primary-btn {
+        background: linear-gradient(135deg, #f5b800, #ffd14d);
+        color: #173d2b;
+        border: 1px solid rgba(23, 61, 43, 0.08);
+    }
+    .secondary-btn {
+        background: #ffffff;
+        border: 1px solid #d8e1da;
+        color: #173d2b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="urgent-shell">
+    <div class="urgent-card">
+        <div class="eyebrow">Emergency action now</div>
+        <h1>Emergency</h1>
+        <p class="lead">A snakebite can worsen quickly. If the patient has severe swelling, trouble breathing, faintness, or confusion, contact emergency services immediately.</p>
+
+        <div class="alert-box">Call emergency services now and say this is a possible snakebite emergency.</div>
+
+        <div class="detail-list">
+            <div class="detail">
+                <strong>Nearest emergency contact</strong>
+                <span>{{ emergency_number }}</span>
+            </div>
+            <div class="detail">
+                <strong>Suggested facility</strong>
+                <span>{{ facility.name }} · {{ facility.facility_type }}</span>
+            </div>
+            <div class="detail">
+                <strong>Location</strong>
+                <span>{{ facility.region }} · {{ country_label }}</span>
+            </div>
+        </div>
+
+        <div class="action-stack">
+            <a class="primary-btn" href="tel:{{ emergency_number }}">Call emergency services</a>
+            <a class="secondary-btn" href="tel:{{ facility.contact_number|default:emergency_number }}">Call facility</a>
+            <a class="secondary-btn" href="{% url 'snakebite:community_get_help' %}">Find nearest help</a>
+            <a class="secondary-btn" href="{% url 'snakebite:community_home' %}">Back to home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

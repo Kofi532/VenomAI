@@ -701,6 +701,8 @@ def community_bite_assessment_view(request):
 	except (TypeError, ValueError):
 		current_step = 1
 	current_step = max(1, min(current_step, 4))
+	if current_step == 1:
+		assessment_data = {}
 
 	if request.method == 'POST':
 		if current_step == 1:
@@ -843,6 +845,61 @@ def community_get_help_view(request):
 		{
 			'facilities_payload': facilities_payload,
 			'selected_facility': selected_facility,
+			'current_step': 4,
+		},
+	)
+
+
+@snakebite_password_required
+def community_transport_view(request):
+	selected_country = (request.session.get(SNAKEBITE_NATIONALITY_SESSION_KEY) or 'ghana').strip().lower()
+	country_label = dict(SNAKEBITE_NATIONALITY_OPTIONS).get(selected_country, 'Ghana')
+	emergency_number = SNAKEBITE_EMERGENCY_NUMBERS.get(selected_country, '112')
+	facilities_payload = _demo_facility_payload()
+	selected_facility_id = request.GET.get('facility')
+	facility = next((item for item in facilities_payload if str(item['id']) == str(selected_facility_id)), None)
+	if facility is None:
+		facility = facilities_payload[0] if facilities_payload else {
+			'name': 'Nearest emergency facility',
+			'facility_type': 'Referral centre',
+			'region': country_label,
+			'contact_number': emergency_number,
+			'latitude': 5.6037,
+			'longitude': -0.1870,
+		}
+	return render(
+		request,
+		'snakebite/community_transport.html',
+		{
+			'facility': facility,
+			'emergency_number': emergency_number,
+			'country_label': country_label,
+			'current_step': 4,
+		},
+	)
+
+
+@snakebite_password_required
+def community_emergency_view(request):
+	selected_country = (request.session.get(SNAKEBITE_NATIONALITY_SESSION_KEY) or 'ghana').strip().lower()
+	country_label = dict(SNAKEBITE_NATIONALITY_OPTIONS).get(selected_country, 'Ghana')
+	emergency_number = SNAKEBITE_EMERGENCY_NUMBERS.get(selected_country, '112')
+	facilities_payload = _demo_facility_payload()
+	facility = facilities_payload[0] if facilities_payload else {
+		'name': 'Nearest emergency facility',
+		'facility_type': 'Referral centre',
+		'region': country_label,
+		'contact_number': emergency_number,
+		'latitude': 5.6037,
+		'longitude': -0.1870,
+	}
+	return render(
+		request,
+		'snakebite/community_emergency.html',
+		{
+			'facility': facility,
+			'emergency_number': emergency_number,
+			'country_label': country_label,
 			'current_step': 4,
 		},
 	)
