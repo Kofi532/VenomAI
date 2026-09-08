@@ -14,15 +14,21 @@
         overflow-x: hidden;
     }
     .topbar-inner {
-        max-width: none;
-        padding-inline: clamp(12px, 4vw, 32px);
+        max-width: 480px;
+        padding-inline: clamp(12px, 4vw, 16px);
     }
     .page-shell {
-        max-width: none;
+        max-width: 480px;
         margin: 0 auto;
-        padding: 0 clamp(12px, 4vw, 32px) 104px;
+        padding: 0 clamp(12px, 4vw, 16px) 104px;
         position: relative;
+        width: min(100%, 480px);
+    }
+    .page-shell > .page-shell {
         width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0;
     }
 
     /* Wallet Card - Like the photo style */
@@ -325,7 +331,7 @@
         left: 50%;
         bottom: 0;
         z-index: 30;
-        width: 100%;
+        width: min(480px, 100%);
         transform: translateX(-50%);
         display: grid;
         grid-template-columns: repeat(2, 1fr);
