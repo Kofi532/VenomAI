@@ -4,6 +4,24 @@
 
 {% block extra_styles %}
 <style>
+    :root {
+        --bg: #f8fafc;
+        --panel: #ffffff;
+        --panel-2: #f1f5f9;
+        --card: #ffffff;
+        --line: #e2e8f0;
+        --text: #1a202c;
+        --muted: #475569;
+        --gold: #b7791f;
+        --gold-soft: #fef3c7;
+    }
+    body {
+        background: #f8fafc;
+        color: #1a202c;
+    }
+    .page-shell {
+        background: #f8fafc;
+    }
     .learn-header {
         display: flex;
         align-items: flex-start;
@@ -23,6 +41,7 @@
         margin: 0;
         font-size: 25px;
         line-height: 1.15;
+        color: #1a202c;
     }
     .back-link {
         display: inline-flex;
@@ -33,8 +52,8 @@
         flex: 0 0 40px;
         border: 1px solid var(--line);
         border-radius: 12px;
-        background: rgba(255,255,255,0.04);
-        color: var(--text);
+        background: #ffffff;
+        color: #1a202c;
         font-size: 20px;
     }
     .learn-intro {
@@ -50,7 +69,7 @@
         padding: 14px;
         border: 1px solid rgba(245,184,0,0.28);
         border-radius: 16px;
-        background: rgba(245,184,0,0.07);
+        background: #fffbeb;
     }
     .learning-path-icon {
         display: grid;
@@ -67,6 +86,7 @@
         display: block;
         margin-bottom: 3px;
         font-size: 14px;
+        color: #1a202c;
     }
     .learning-path span {
         color: var(--muted);
@@ -83,6 +103,7 @@
     .modules-heading h2 {
         margin: 0;
         font-size: 18px;
+        color: #1a202c;
     }
     .modules-heading span {
         color: var(--muted);
@@ -101,7 +122,7 @@
         padding: 14px;
         border: 1px solid var(--line);
         border-radius: 16px;
-        background: var(--panel);
+        background: #ffffff;
         transition: border-color 0.2s ease, transform 0.2s ease;
     }
     .module-card:hover {
@@ -124,10 +145,11 @@
         font-size: 14px;
         font-weight: 750;
         line-height: 1.35;
+        color: #1a202c;
     }
     .module-description {
         display: block;
-        color: var(--muted);
+        color: #475569;
         font-size: 12px;
         line-height: 1.4;
     }
@@ -140,8 +162,8 @@
         padding: 14px;
         border: 1px solid var(--line);
         border-radius: 16px;
-        background: rgba(255,255,255,0.025);
-        color: var(--muted);
+        background: #ffffff;
+        color: #334155;
         font-size: 13px;
         line-height: 1.5;
     }
