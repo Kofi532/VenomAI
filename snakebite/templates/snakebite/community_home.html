@@ -66,14 +66,14 @@
         z-index: 1;
     }
     .wallet-label {
-        font-size: 0.7rem;
+        font-size: clamp(0.78rem, 2.2vw, 0.9rem);
         font-weight: 500;
         color: rgba(255,255,255,0.82);
         letter-spacing: 0.5px;
         text-transform: uppercase;
     }
     .wallet-number {
-        font-size: 0.7rem;
+        font-size: clamp(0.78rem, 2.2vw, 0.9rem);
         font-weight: 600;
         color: rgba(255,255,255,0.9);
         background: rgba(255,255,255,0.06);
@@ -86,7 +86,7 @@
         z-index: 1;
     }
     .hero-content .eyebrow {
-        font-size: 0.7rem;
+        font-size: clamp(0.78rem, 2.2vw, 0.9rem);
         text-transform: uppercase;
         letter-spacing: 0.14em;
         color: rgba(255,255,255,0.82);
@@ -94,7 +94,7 @@
         font-weight: 600;
     }
     .hero-content .hero-title {
-        font-size: 1.2rem;
+        font-size: clamp(1.25rem, 4.5vw, 1.7rem);
         font-weight: 700;
         margin: 0 0 10px;
         line-height: 1.2;
@@ -111,9 +111,9 @@
         background: rgba(255,255,255,0.08);
         border: 1px solid rgba(255,255,255,0.05);
         color: #fff;
-        padding: 6px 14px;
+        padding: 9px 16px;
         border-radius: 30px;
-        font-size: 0.75rem;
+        font-size: clamp(0.82rem, 2.5vw, 0.98rem);
         font-weight: 600;
         cursor: pointer;
         letter-spacing: 0.3px;
@@ -145,7 +145,7 @@
         min-width: 0;
         background: #fff;
         border-radius: 14px;
-        padding: 10px 4px 8px;
+        padding: 13px 7px 11px;
         text-align: center;
         box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         transition: all 0.15s;
@@ -153,7 +153,7 @@
         text-decoration: none;
         color: #1a1a2e;
         font-weight: 600;
-        font-size: 0.75rem;
+        font-size: clamp(0.82rem, 2.5vw, 0.98rem);
         letter-spacing: 0.3px;
         overflow-wrap: anywhere;
     }
@@ -164,7 +164,7 @@
     }
     .quick-grid-item .icon {
         display: block;
-        font-size: 1.4rem;
+        font-size: clamp(1.5rem, 5vw, 2rem);
         margin-bottom: 2px;
         color: #173d2b;
     }
@@ -188,8 +188,8 @@
         background: #fff;
         border: 1px solid #e8ece9;
         border-radius: 30px;
-        padding: 5px 12px;
-        font-size: 0.75rem;
+        padding: 8px 14px;
+        font-size: clamp(0.8rem, 2.4vw, 0.95rem);
         font-weight: 600;
         color: #1a2a3a;
         text-decoration: none;
@@ -216,14 +216,14 @@
         width: 100%;
     }
     .promo-banner h3 {
-        font-size: 0.9rem;
+        font-size: clamp(1rem, 3vw, 1.2rem);
         font-weight: 800;
         margin: 0 0 2px;
         letter-spacing: -0.3px;
         color: #173d2b;
     }
     .promo-banner p {
-        font-size: 0.78rem;
+        font-size: clamp(0.86rem, 2.5vw, 1rem);
         font-weight: 600;
         margin: 0;
         opacity: 1;
@@ -245,7 +245,7 @@
         width: 100%;
     }
     .healthcare-prompt-title {
-        font-size: 0.78rem;
+        font-size: clamp(0.82rem, 2.5vw, 0.98rem);
         font-weight: 600;
         color: #47725a;
         margin: 0;
@@ -253,9 +253,9 @@
     .healthcare-prompt-link {
         background: #173d2b;
         color: #fff;
-        padding: 3px 12px;
+        padding: 7px 14px;
         border-radius: 30px;
-        font-size: 0.72rem;
+        font-size: clamp(0.78rem, 2.3vw, 0.9rem);
         font-weight: 700;
         text-decoration: none;
         transition: background 0.15s;
@@ -306,7 +306,7 @@
         width: 100%;
     }
     .lang-selector label {
-        font-size: 0.72rem;
+        font-size: clamp(0.8rem, 2.4vw, 0.95rem);
         font-weight: 600;
         color: #6b7e72;
         margin-right: 6px;
@@ -318,7 +318,7 @@
     .lang-selector select {
         border: 0;
         background: transparent;
-        font-size: 0.72rem;
+        font-size: clamp(0.8rem, 2.4vw, 0.95rem);
         font-weight: 700;
         color: #173d2b;
         outline: 0;
@@ -351,7 +351,7 @@
         gap: 4px;
         padding: 6px 2px;
         color: #5b6e62;
-        font-size: .75rem;
+        font-size: clamp(.8rem, 2.5vw, .95rem);
         font-weight: 800;
         text-decoration: none;
     }
@@ -360,13 +360,9 @@
 
     @media (max-width: 520px) {
         .wallet-card { padding: 14px 12px 14px; }
-        .hero-content .hero-title { font-size: 1rem; }
-        .quick-grid-item { padding: 8px 6px 6px; font-size: clamp(0.68rem, 2.5vw, 0.75rem); }
-        .quick-grid-item .icon { font-size: 1.2rem; }
-        .services-row a { font-size: clamp(0.68rem, 2.5vw, 0.75rem); padding: 4px 8px; }
-        .wallet-btn { font-size: clamp(0.68rem, 2.5vw, 0.75rem); padding: 4px 10px; }
-        .wallet-label { font-size: 0.7rem; }
-        .wallet-number { font-size: 0.7rem; }
+        .quick-grid-item { padding: 11px 6px 9px; }
+        .services-row a { padding: 7px 10px; }
+        .wallet-btn { padding: 8px 12px; }
         .lang-selector { justify-content: space-between; gap: 6px; }
         .lang-selector select { flex: 1 1 140px; }
     }
