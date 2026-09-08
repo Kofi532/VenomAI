@@ -13,9 +13,9 @@
       --text: #1a202c;
       --muted: #475569;
       --gold: #f5b800;
-      --gold-soft: rgba(245,184,0,0.16);
+      --gold-soft: #fef3c7;
       --red: #ff3b30;
-      --shadow: 0 22px 50px rgba(0,0,0,0.32);
+      --shadow: 0 22px 50px rgba(15,23,42,0.1);
     }
     * { box-sizing: border-box; }
     html, body { min-height: 100%; }
@@ -56,7 +56,7 @@
       padding: 22px;
       border: 1px solid var(--line);
       border-radius: 18px;
-      background: rgba(27,32,46,0.94);
+      background: #ffffff;
       box-shadow: var(--shadow);
     }
     .step-label {
@@ -87,7 +87,7 @@
     .progress-segment {
       height: 4px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.1);
+      background: #e2e8f0;
     }
     .progress-segment.active { background: var(--gold); }
     .error {
@@ -95,8 +95,8 @@
       padding: 11px 12px;
       border: 1px solid rgba(255,59,48,0.35);
       border-radius: 12px;
-      background: rgba(255,59,48,0.1);
-      color: #ffb1ac;
+      background: #fef2f2;
+      color: #991b1b;
       font-size: 13px;
       line-height: 1.45;
     }
@@ -119,7 +119,7 @@
       border: 1px solid var(--line);
       border-radius: 12px;
       outline: none;
-      background: rgba(255,255,255,0.03);
+      background: #ffffff;
       color: var(--text);
       font: inherit;
       font-size: 15px;
@@ -149,7 +149,7 @@
       padding: 12px;
       border: 1px solid var(--line);
       border-radius: 12px;
-      background: rgba(255,255,255,0.03);
+      background: #f8fafc;
       color: var(--text);
       cursor: pointer;
       font-size: 14px;
@@ -159,7 +159,7 @@
     .member-option:has(input:checked) {
       border-color: rgba(245,184,0,0.55);
       background: var(--gold-soft);
-      color: #ffd867;
+      color: #92400e;
     }
     .member-option input { accent-color: var(--gold); }
     .actions {
