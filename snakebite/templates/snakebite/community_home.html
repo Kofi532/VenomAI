@@ -13,10 +13,14 @@
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         overflow-x: hidden;
     }
+    .topbar-inner {
+        max-width: none;
+        padding-inline: clamp(12px, 4vw, 32px);
+    }
     .page-shell {
         max-width: none;
         margin: 0 auto;
-        padding: 0 16px 104px;
+        padding: 0 clamp(12px, 4vw, 32px) 104px;
         position: relative;
         width: 100%;
     }
@@ -46,6 +50,8 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 6px;
         margin-bottom: 4px;
         position: relative;
         z-index: 1;
@@ -87,6 +93,7 @@
     }
     .wallet-actions {
         display: flex;
+        flex-wrap: wrap;
         gap: 8px;
         position: relative;
         z-index: 1;
@@ -105,6 +112,8 @@
         transition: all 0.2s;
         text-decoration: none;
         display: inline-block;
+        max-width: 100%;
+        overflow-wrap: anywhere;
     }
     .wallet-btn:hover { background: rgba(255,255,255,0.14); }
     .wallet-btn.primary {
@@ -118,7 +127,7 @@
     /* Quick action grid - 4 items */
     .quick-grid {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));
         gap: 6px;
         margin: 12px 0 10px;
         width: 100%;
@@ -217,6 +226,8 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 6px 10px;
         background: rgba(23,61,43,0.04);
         border-radius: 12px;
         padding: 6px 12px;
@@ -240,6 +251,7 @@
         text-decoration: none;
         transition: background 0.15s;
         white-space: nowrap;
+        flex-shrink: 0;
     }
     .healthcare-prompt-link:hover { background: #24593e; }
 
@@ -275,8 +287,10 @@
     .lang-selector {
         display: flex;
         justify-content: flex-end;
+        align-items: center;
+        flex-wrap: wrap;
         margin: 8px 0 4px;
-        padding: 4px 10px;
+        padding: 6px 10px;
         background: rgba(0,0,0,0.02);
         border-radius: 30px;
         border: 1px solid rgba(0,0,0,0.04);
@@ -290,6 +304,7 @@
         display: flex;
         align-items: center;
         min-width: 0;
+        flex: 1 1 180px;
     }
     .lang-selector select {
         border: 0;
@@ -299,7 +314,8 @@
         color: #173d2b;
         outline: 0;
         padding: 2px 0;
-        max-width: 140px;
+        width: min(100%, 180px);
+        max-width: 180px;
         min-width: 0;
     }
 
@@ -333,27 +349,17 @@
     .community-nav a.active { color: #173d2b; }
     .community-nav-icon { font-size: 1.15rem; line-height: 1; }
 
-    @media (max-width: 400px) {
-        .page-shell { padding: 0 8px 104px; }
+    @media (max-width: 520px) {
         .wallet-card { padding: 14px 12px 14px; }
         .hero-content .hero-title { font-size: 1rem; }
-        .quick-grid-item { padding: 8px 2px 6px; font-size: 0.7rem; }
+        .quick-grid-item { padding: 8px 6px 6px; font-size: clamp(0.68rem, 2.5vw, 0.75rem); }
         .quick-grid-item .icon { font-size: 1.2rem; }
-        .services-row a { font-size: 0.7rem; padding: 4px 8px; }
-        .wallet-btn { font-size: 0.7rem; padding: 4px 10px; }
+        .services-row a { font-size: clamp(0.68rem, 2.5vw, 0.75rem); padding: 4px 8px; }
+        .wallet-btn { font-size: clamp(0.68rem, 2.5vw, 0.75rem); padding: 4px 10px; }
         .wallet-label { font-size: 0.7rem; }
         .wallet-number { font-size: 0.7rem; }
-        .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
         .lang-selector { justify-content: space-between; gap: 6px; }
-        .lang-selector label { flex: 1 1 auto; }
-        .lang-selector select { flex: 0 1 140px; }
-    }
-
-    @media (max-width: 360px) {
-        .quick-grid { gap: 4px; }
-        .quick-grid-item { font-size: 0.65rem; }
-        .quick-grid-item .icon { font-size: 1rem; }
-        .services-row a { font-size: 0.65rem; padding: 3px 6px; }
+        .lang-selector select { flex: 1 1 140px; }
     }
 </style>
 {% endblock %}
