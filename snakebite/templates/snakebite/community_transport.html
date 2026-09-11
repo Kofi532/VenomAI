@@ -90,6 +90,32 @@
         border: 1px solid #d8e1da;
         color: #173d2b;
     }
+    .operator-section {
+        margin-top: 18px;
+    }
+    .operator-card {
+        background: #f4f8f4;
+        border: 1px solid #dfe9df;
+        border-radius: 14px;
+        padding: 12px 14px;
+        margin-top: 10px;
+    }
+    .operator-name {
+        margin: 0 0 4px;
+        color: #173d2b;
+        font-weight: 800;
+    }
+    .operator-line {
+        margin: 0 0 4px;
+        color: #476152;
+        font-size: 0.85rem;
+    }
+    .register-link {
+        display: inline-flex;
+        margin-top: 12px;
+        color: #856404;
+        font-weight: 800;
+    }
 </style>
 {% endblock %}
 
@@ -123,6 +149,21 @@
             <a class="secondary-btn" href="https://www.google.com/maps/dir/?api=1&destination={{ facility.latitude }},{{ facility.longitude }}" target="_blank" rel="noopener noreferrer">Get directions</a>
             <a class="secondary-btn" href="{% url 'snakebite:community_get_help' %}">Back to help options</a>
         </div>
+
+        <section class="operator-section" aria-labelledby="transport-operators-title">
+            <h2 id="transport-operators-title">Community transport operators</h2>
+            <p class="lead">Available operators can help patients reach {{ country_label }} care facilities.</p>
+            {% for operator in transport_operators %}
+                <article class="operator-card">
+                    <h3 class="operator-name">{{ operator.operator_name }}{% if operator.is_verified %} · Verified{% endif %}</h3>
+                    <p class="operator-line">{{ operator.vehicle_type }} · Serves {{ operator.service_area }}</p>
+                    <a class="primary-btn" href="tel:{{ operator.phone_number }}">Call {{ operator.operator_name }}</a>
+                </article>
+            {% empty %}
+                <p class="operator-line">No registered operators are available yet.</p>
+            {% endfor %}
+            <a class="register-link" href="{% url 'snakebite:transport_operator_register' %}">Register as a transport operator →</a>
+        </section>
     </div>
 </div>
 {% endblock %}

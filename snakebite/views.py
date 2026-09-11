@@ -33,6 +33,7 @@ from .models import (
 	SnakeSighting,
 	Symptom,
 	HealthcareMemberProfile,
+	TransportOperator,
 )
 from .services import SnakebiteRiskEngine, _haversine_distance_km, get_nearby_antivenom_facilities
 from .serializers import (
@@ -58,6 +59,7 @@ SNAKEBITE_NATIONALITY_OPTIONS = (
 	('malawi', 'Malawi'),
 	('kenya', 'Kenya'),
 	('nigeria', 'Nigeria'),
+	('sierra_leone', 'Sierra Leone'),
 	('zambia', 'Zambia'),
 )
 
@@ -71,6 +73,7 @@ SNAKEBITE_COUNTRY_COORDINATES = {
 	'kenya': {'latitude': -1.2864, 'longitude': 36.8172},
 	'malawi': {'latitude': -13.2543, 'longitude': 34.3015},
 	'nigeria': {'latitude': 9.0820, 'longitude': 8.6753},
+	'sierra_leone': {'latitude': 8.4657, 'longitude': -13.2317},
 	'zambia': {'latitude': -15.3875, 'longitude': 28.3228},
 }
 
@@ -79,6 +82,7 @@ SNAKEBITE_EMERGENCY_NUMBERS = {
 	'kenya': '999',
 	'malawi': '112',
 	'nigeria': '112',
+	'sierra_leone': '999',
 	'zambia': '991',
 }
 
@@ -87,6 +91,7 @@ SNAKEBITE_COUNTRY_BOUNDS = {
 	'kenya': {'min_latitude': -4.7, 'max_latitude': 4.9, 'min_longitude': 33.9, 'max_longitude': 41.9},
 	'malawi': {'min_latitude': -17.1, 'max_latitude': -9.2, 'min_longitude': 32.6, 'max_longitude': 35.9},
 	'nigeria': {'min_latitude': 4.0, 'max_latitude': 14.7, 'min_longitude': 2.7, 'max_longitude': 14.7},
+	'sierra_leone': {'min_latitude': 6.8, 'max_latitude': 10.1, 'min_longitude': -13.5, 'max_longitude': -10.2},
 	'zambia': {'min_latitude': -18.1, 'max_latitude': -8.2, 'min_longitude': 21.9, 'max_longitude': 33.7},
 }
 
@@ -117,6 +122,7 @@ def get_country_snake_image_options(country_code, selected_category='viper'):
 		'malawi': 'malawi',
 		'kenya': 'Kenya',
 		'nigeria': 'Nigeria',
+		'sierra_leone': 'Sierra Leone',
 		'zambia': 'Zambia',
 	}
 	folder_name = folder_names.get((country_code or '').lower())
@@ -663,6 +669,8 @@ def community_home_view(request):
 		request.session[SNAKEBITE_MEMBER_TYPE_SESSION_KEY] = 'community'
 
 	selected_country = (request.session.get(SNAKEBITE_NATIONALITY_SESSION_KEY) or '').strip().lower()
+	if selected_country not in {code for code, _ in SNAKEBITE_NATIONALITY_OPTIONS}:
+		return redirect(f"{reverse('snakebite:access')}?step=profile&next={reverse('snakebite:community_home')}")
 	country_labels = dict(SNAKEBITE_NATIONALITY_OPTIONS)
 	if request.method == 'POST' and 'nationality' in request.POST:
 		country_code = (request.POST.get('nationality') or '').strip().lower()
@@ -856,6 +864,7 @@ def community_transport_view(request):
 	country_label = dict(SNAKEBITE_NATIONALITY_OPTIONS).get(selected_country, 'Ghana')
 	emergency_number = SNAKEBITE_EMERGENCY_NUMBERS.get(selected_country, '112')
 	facilities_payload = _demo_facility_payload()
+	transport_operators = TransportOperator.objects.filter(is_available=True).order_by('-is_verified', 'operator_name')
 	selected_facility_id = request.GET.get('facility')
 	facility = next((item for item in facilities_payload if str(item['id']) == str(selected_facility_id)), None)
 	if facility is None:
@@ -872,10 +881,34 @@ def community_transport_view(request):
 		'snakebite/community_transport.html',
 		{
 			'facility': facility,
+			'transport_operators': transport_operators,
 			'emergency_number': emergency_number,
 			'country_label': country_label,
 			'current_step': 4,
 		},
+	)
+
+
+@snakebite_password_required
+def transport_operator_registration_view(request):
+	form_values = {
+		'operator_name': '',
+		'phone_number': '',
+		'service_area': '',
+		'vehicle_type': '',
+	}
+	error_message = ''
+	if request.method == 'POST':
+		form_values = {field: request.POST.get(field, '').strip() for field in form_values}
+		if not all(form_values.values()):
+			error_message = 'Complete all fields to register as a transport operator.'
+		else:
+			TransportOperator.objects.create(**form_values)
+			return redirect('snakebite:community_transport')
+	return render(
+		request,
+		'snakebite/transport_operator_registration.html',
+		{'form_values': form_values, 'error_message': error_message},
 	)
 
 

@@ -1,0 +1,38 @@
+{% extends 'snakebite/base.html' %}
+{% block title %}Register Transport Operator{% endblock %}
+{% block extra_styles %}
+<style>
+    body { background: linear-gradient(180deg, #fffbeb 0%, #f8fafc 100%); }
+    .registration-shell { max-width: 480px; margin: 0 auto; padding: 18px 16px 110px; }
+    .registration-card { background: #fff; border: 1px solid #d8e1da; border-radius: 20px; padding: 22px 16px; box-shadow: 0 12px 28px rgba(23, 61, 43, 0.08); }
+    .eyebrow { color: #856404; font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 8px 0; color: #173d2b; font-size: 1.7rem; }
+    .lead { color: #5d6f65; line-height: 1.6; }
+    .notice { margin: 16px 0; padding: 12px 14px; border-radius: 12px; background: #fff4e5; border: 1px solid #f3c77b; color: #7a4b00; font-weight: 700; }
+    .field-group { display: grid; gap: 7px; margin-top: 15px; }
+    label { color: #173d2b; font-size: .86rem; font-weight: 800; }
+    input { width: 100%; padding: 12px 13px; border: 1px solid #d8e1da; border-radius: 12px; color: #173d2b; font-size: 1rem; }
+    .actions { display: grid; gap: 10px; margin-top: 20px; }
+    .primary-btn, .secondary-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; border-radius: 12px; padding: 11px 14px; font-weight: 800; text-align: center; }
+    .primary-btn { border: 0; background: linear-gradient(135deg, #f5b800, #ffd14d); color: #173d2b; }
+    .secondary-btn { border: 1px solid #d8e1da; background: #fff; color: #173d2b; }
+</style>
+{% endblock %}
+{% block content %}
+<main class="registration-shell">
+    <section class="registration-card">
+        <span class="eyebrow">Community transport network</span>
+        <h1>Register as a transport operator</h1>
+        <p class="lead">Share your contact details so people arranging urgent snakebite care can find available transport support.</p>
+        {% if error_message %}<div class="notice" role="alert">{{ error_message }}</div>{% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="field-group"><label for="operator-name">Operator or organization name</label><input id="operator-name" name="operator_name" value="{{ form_values.operator_name }}" required></div>
+            <div class="field-group"><label for="phone-number">Phone number</label><input id="phone-number" name="phone_number" type="tel" value="{{ form_values.phone_number }}" required></div>
+            <div class="field-group"><label for="service-area">Service area</label><input id="service-area" name="service_area" placeholder="Town, district, or region" value="{{ form_values.service_area }}" required></div>
+            <div class="field-group"><label for="vehicle-type">Vehicle type</label><input id="vehicle-type" name="vehicle_type" placeholder="Ambulance, taxi, motorcycle, van" value="{{ form_values.vehicle_type }}" required></div>
+            <div class="actions"><button class="primary-btn" type="submit">Submit registration</button></div>
+        </form>
+    </section>
+</main>
+{% endblock %}

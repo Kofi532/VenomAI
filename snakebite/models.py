@@ -385,3 +385,24 @@ class Referral(models.Model):
 
 	def __str__(self):
 		return f"Referral for {self.case.case_id}"
+
+
+class TransportOperator(models.Model):
+	operator_name = models.CharField(max_length=150)
+	phone_number = models.CharField(max_length=30)
+	service_area = models.CharField(max_length=150)
+	vehicle_type = models.CharField(max_length=80)
+	is_available = models.BooleanField(default=True)
+	is_verified = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	class Meta:
+		ordering = ['-is_verified', 'operator_name']
+		indexes = [
+			models.Index(fields=['service_area']),
+			models.Index(fields=['is_available']),
+			models.Index(fields=['is_verified']),
+		]
+
+	def __str__(self):
+		return f'{self.operator_name} - {self.service_area}'

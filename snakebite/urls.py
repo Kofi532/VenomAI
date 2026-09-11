@@ -29,6 +29,7 @@ urlpatterns = [
 	path('community-nearest-help/', views.community_nearest_help_view, name='community_nearest_help'),
 	path('community-get-help/', views.community_get_help_view, name='community_get_help'),
 	path('community-transport/', views.community_transport_view, name='community_transport'),
+	path('community-transport/register/', views.transport_operator_registration_view, name='transport_operator_register'),
 	path('community-emergency/', views.community_emergency_view, name='community_emergency'),
 	path('community-help-request/<slug:facility_id>/', views.community_help_request_view, name='community_help_request'),
 	path('case-details/<int:pk>/', views.CaseDetailsView.as_view(), name='case_details'),

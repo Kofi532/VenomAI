@@ -12,6 +12,7 @@ _FLAG_ASSET_MAP = {
 	'malawi': '/static/snakebite/flags/malawi.png',
 	'kenya': '/static/snakebite/flags/kenya.png',
 	'nigeria': '/static/snakebite/flags/nigeria.png',
+	'sierra_leone': '/static/snakebite/flags/sierra_leone.svg',
 	'zambia': '/static/snakebite/flags/zambia.png',
 }
 

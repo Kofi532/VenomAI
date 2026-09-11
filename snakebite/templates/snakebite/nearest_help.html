@@ -60,6 +60,33 @@
         margin: 0;
         color: #f5f7fb;
     }
+    .context-card {
+        margin-bottom: 16px;
+        padding: 16px;
+        border: 1px solid rgba(140, 231, 177, 0.2);
+        border-radius: 18px;
+        background: rgba(19, 35, 31, 0.78);
+    }
+    .context-label {
+        margin: 0 0 6px;
+        color: #8ce7b1;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+    .context-title {
+        margin: 0 0 6px;
+        color: #f5f7fb;
+        font-size: 1.05rem;
+        font-weight: 800;
+    }
+    .context-copy {
+        margin: 0;
+        color: #bed7d0;
+        font-size: 0.84rem;
+        line-height: 1.55;
+    }
     .map-card {
         margin-bottom: 18px;
         border-radius: 20px;
@@ -131,6 +158,15 @@
         gap: 10px;
         margin-top: 12px;
     }
+    .facility-actions.single {
+        grid-template-columns: 1fr;
+    }
+    .facility-actions .secondary-btn,
+    .facility-actions .primary-btn,
+    .facility-actions .danger-btn {
+        min-height: 44px;
+        text-align: center;
+    }
     .actions {
         position: sticky;
         bottom: 72px;
@@ -140,6 +176,26 @@
         padding-top: 6px;
         background: rgba(7, 19, 15, 0.82);
         backdrop-filter: blur(10px);
+    }
+    .timeline-back {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        border: 1px solid rgba(140, 231, 177, 0.34);
+        border-radius: 14px;
+        background: rgba(140, 231, 177, 0.08);
+        color: #d8f8e5;
+        font-size: 0.9rem;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+        transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+    }
+    .timeline-back:hover,
+    .timeline-back:focus-visible {
+        border-color: rgba(140, 231, 177, 0.62);
+        background: rgba(140, 231, 177, 0.15);
+        transform: translateY(-1px);
     }
     .emergency-bar {
         position: sticky;
@@ -156,14 +212,22 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        background: linear-gradient(135deg, rgba(255,59,48,0.22), rgba(255,59,48,0.12));
-        border: 1px solid rgba(255, 92, 82, 0.40);
-        border-radius: 14px;
-        color: #ffd6d3;
+        min-height: 50px;
+        background: linear-gradient(135deg, #d94b43, #b83232);
+        border: 1px solid rgba(255, 185, 179, 0.52);
+        border-radius: 16px;
+        color: #fff8f7;
         padding: 12px 16px;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.06em;
+        box-shadow: 0 10px 24px rgba(160, 35, 31, 0.28);
+        transition: filter 160ms ease, transform 160ms ease;
+    }
+    .emergency-link:hover,
+    .emergency-link:focus-visible {
+        filter: brightness(1.08);
+        transform: translateY(-1px);
     }
     .leaflet-popup-content-wrapper,
     .leaflet-popup-tip {
@@ -191,6 +255,12 @@
         </div>
     </header>
 
+    <section class="context-card" aria-label="Referral guidance">
+        <p class="context-label">Step 4 of 4 · {{ country_label }}</p>
+        <h2 class="context-title">Find care near you</h2>
+        <p class="context-copy">These facilities are the closest available referral options with antivenom support. Choose a facility to get directions, arrange transport, or call for urgent help.</p>
+    </section>
+
     <div class="map-card" aria-label="Nearby facility map">
         <div id="nearest-help-map"></div>
     </div>
@@ -205,23 +275,30 @@
             <p class="facility-line">Phone: {{ facility.contact_phone|default:'112' }}</p>
             <div class="facility-actions">
                 <a href="https://www.google.com/maps/dir/?api=1&destination={{ facility.latitude }},{{ facility.longitude }}" class="secondary-btn" target="_blank" rel="noopener noreferrer">Get Directions</a>
-                <a href="tel:{{ facility.contact_phone|default:emergency_number }}" class="primary-btn">Call for Transport Help</a>
+                <a href="{% url 'snakebite:community_transport' %}" class="primary-btn">Arrange Transport</a>
+            </div>
+            <div class="facility-actions">
+                <a href="{% url 'snakebite:community_get_help' %}" class="secondary-btn">View Help Options</a>
+                <a href="tel:{{ facility.contact_phone|default:emergency_number }}" class="danger-btn">Call Facility</a>
             </div>
         </article>
         {% empty %}
         <article class="facility-card">
             <h2 class="facility-name">No facility found yet</h2>
-            <p class="facility-line">Please return to the timeline and contact emergency services immediately.</p>
+            <p class="facility-line">Please contact emergency services immediately and seek the nearest treatment centre.</p>
+            <div class="facility-actions single">
+                <a href="tel:{{ emergency_number|default:'112' }}" class="danger-btn">Call emergency services</a>
+            </div>
         </article>
         {% endfor %}
     </div>
 
     <div class="actions">
-        <a href="{% url 'snakebite:community_home' %}" class="secondary-btn">Back to timeline</a>
+        <a href="{% url 'snakebite:community_home' %}" class="timeline-back"><span aria-hidden="true">←</span>&nbsp; Back to timeline</a>
     </div>
 
     <div class="emergency-bar">
-        <a href="tel:{{ emergency_number|default:'112' }}" class="emergency-link">Emergency call</a>
+        <a href="tel:{{ emergency_number|default:'112' }}" class="emergency-link"><span aria-hidden="true">☎</span> Call emergency services</a>
     </div>
 </div>
 {{ facilities|json_script:"nearest-facilities-json" }}

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import HealthcareMemberProfile, HealthFacility, PatientAssessment, PatientCase, Referral, Region, SnakeSighting, Symptom
+from .models import HealthcareMemberProfile, HealthFacility, PatientAssessment, PatientCase, Referral, Region, SnakeSighting, Symptom, TransportOperator
 
 
 class SnakebiteAccessAndCHWTests(TestCase):
@@ -232,6 +232,18 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertContains(response, 'click here')
         self.assertContains(response, reverse('snakebite:chw_home'))
 
+    def test_community_home_requires_country_selection(self):
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_member_type'] = 'community'
+        session.save()
+
+        response = self.client.get(reverse('snakebite:community_home'))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('snakebite:access'), response.url)
+        self.assertIn('step=profile', response.url)
+
     def test_community_home_uses_valid_nav_routes(self):
         session = self.client.session
         session['snakebite_access_granted'] = True
@@ -338,6 +350,7 @@ class SnakebiteAccessAndCHWTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Choose your country to continue.')
+        self.assertContains(response, 'Sierra Leone')
         self.assertNotContains(response, 'Member type')
 
         response = self.client.post(
@@ -381,6 +394,48 @@ class SnakebiteAccessAndCHWTests(TestCase):
         self.assertEqual(transport_response.status_code, 200)
         self.assertContains(transport_response, 'Arrange transport')
         self.assertContains(transport_response, 'Call emergency transport')
+
+    def test_transport_operator_registration_adds_operator_to_transport_page(self):
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_nationality'] = 'ghana'
+        session['snakebite_member_type'] = 'community'
+        session.save()
+
+        registration_response = self.client.get(reverse('snakebite:transport_operator_register'))
+        self.assertEqual(registration_response.status_code, 200)
+        self.assertContains(registration_response, 'Register as a transport operator')
+
+        response = self.client.post(
+            reverse('snakebite:transport_operator_register'),
+            {
+                'operator_name': 'SafeRide Ambulance',
+                'phone_number': '+233240000000',
+                'service_area': 'Accra Metro',
+                'vehicle_type': 'Ambulance',
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('snakebite:community_transport'))
+        operator = TransportOperator.objects.get(operator_name='SafeRide Ambulance')
+        self.assertEqual(operator.service_area, 'Accra Metro')
+
+        transport_response = self.client.get(reverse('snakebite:community_transport'))
+        self.assertContains(transport_response, 'SafeRide Ambulance')
+        self.assertContains(transport_response, 'href="tel:+233240000000"')
+
+    def test_community_home_links_to_transport_operator_registration(self):
+        session = self.client.session
+        session['snakebite_access_granted'] = True
+        session['snakebite_nationality'] = 'ghana'
+        session['snakebite_member_type'] = 'community'
+        session.save()
+
+        response = self.client.get(reverse('snakebite:community_home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse('snakebite:transport_operator_register'))
+        self.assertContains(response, 'Register transport')
 
         emergency_response = self.client.get(reverse('snakebite:community_emergency'))
         self.assertEqual(emergency_response.status_code, 200)
@@ -704,6 +759,7 @@ class SnakebiteAccessAndCHWTests(TestCase):
             'kenya': {'latitude': -1.2864, 'longitude': 36.8172, 'label': 'Kenya'},
             'malawi': {'latitude': -13.2543, 'longitude': 34.3015, 'label': 'Malawi'},
             'nigeria': {'latitude': 9.0820, 'longitude': 8.6753, 'label': 'Nigeria'},
+            'sierra_leone': {'latitude': 8.4657, 'longitude': -13.2317, 'label': 'Sierra Leone'},
             'zambia': {'latitude': -15.3875, 'longitude': 28.3228, 'label': 'Zambia'},
         }
 
